@@ -2,7 +2,7 @@ import axios from "axios";
 
 import { auth } from "@/configurations/firebase.config";
 
-const isProduction = process.env.NODE_ENV === "production";
+const isProduction = process.env.NEXT_PUBLIC_ENV === "production";
 const productionURL =
   process.env.NEXT_PUBLIC_PROD_API_URL || process.env.NEXT_PUBLIC_API_URL;
 

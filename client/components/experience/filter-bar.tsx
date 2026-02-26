@@ -1,8 +1,17 @@
+"use client";
+
+import { Search, SlidersHorizontal, X } from "lucide-react";
+
 import React from "react";
-import { Search } from "lucide-react";
+
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   searchTerm: string;
@@ -33,68 +42,119 @@ const FiltersBar: React.FC<Props> = ({
   onSelectPeriod,
   onClear,
 }) => {
+  const hasActiveFilters =
+    searchTerm ||
+    selectedLocation !== "all" ||
+    selectedArchitecture !== "all" ||
+    selectedPeriod !== "all";
+
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-      <div className="relative w-full">
-        <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-        <Input
-          placeholder="Search monuments..."
-          value={searchTerm}
-          onChange={(e) => onSearch(e.currentTarget.value)}
-          className="bg-background border-input text-foreground placeholder:text-muted-foreground focus:border-primary w-full pl-10"
-        />
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 text-xs font-semibold tracking-wider text-zinc-500 uppercase">
+        <SlidersHorizontal className="h-3.5 w-3.5" />
+        Filters
       </div>
 
-      <div className="w-full">
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-4">
+        {/* Search */}
+        <div className="relative">
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+          <Input
+            placeholder="Search monuments..."
+            value={searchTerm}
+            onChange={(e) => onSearch(e.currentTarget.value)}
+            className="border-zinc-800 bg-zinc-900 pl-10 text-sm text-white placeholder:text-zinc-600 focus-visible:border-zinc-600 focus-visible:ring-0"
+          />
+        </div>
+
+        {/* Location */}
         <Select value={selectedLocation} onValueChange={onSelectLocation}>
-          <SelectTrigger className="bg-background border-input text-foreground w-full">
-            <SelectValue placeholder="Select Location" className="truncate" />
+          <SelectTrigger className="border-zinc-800 bg-zinc-900 text-sm text-white focus:ring-0">
+            <SelectValue placeholder="All Locations" />
           </SelectTrigger>
-          <SelectContent className="bg-card border-border w-full">
-            <SelectItem value="all" className="text-foreground">All Locations</SelectItem>
+          <SelectContent className="border-zinc-800 bg-zinc-900">
+            <SelectItem
+              value="all"
+              className="text-zinc-300 focus:bg-zinc-800 focus:text-white"
+            >
+              All Locations
+            </SelectItem>
             {locations.map((l) => (
-              <SelectItem key={l} value={l} className="text-foreground" title={l}>
-                <span className="truncate">{l}</span>
+              <SelectItem
+                key={l}
+                value={l}
+                className="text-zinc-300 focus:bg-zinc-800 focus:text-white"
+                title={l}
+              >
+                {l}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-      </div>
 
-      <div className="w-full">
-        <Select value={selectedArchitecture} onValueChange={onSelectArchitecture}>
-          <SelectTrigger className="bg-background border-input text-foreground w-full">
-            <SelectValue placeholder="Architecture Style" className="truncate" />
+        {/* Architecture */}
+        <Select
+          value={selectedArchitecture}
+          onValueChange={onSelectArchitecture}
+        >
+          <SelectTrigger className="border-zinc-800 bg-zinc-900 text-sm text-white focus:ring-0">
+            <SelectValue placeholder="All Styles" />
           </SelectTrigger>
-          <SelectContent className="bg-card border-border w-full">
-            <SelectItem value="all" className="text-foreground">All Styles</SelectItem>
+          <SelectContent className="border-zinc-800 bg-zinc-900">
+            <SelectItem
+              value="all"
+              className="text-zinc-300 focus:bg-zinc-800 focus:text-white"
+            >
+              All Styles
+            </SelectItem>
             {architectures.map((a) => (
-              <SelectItem key={a} value={a} className="text-foreground" title={a}>
-                <span className="truncate">{a}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="w-full flex items-center gap-2">
-        <Select value={selectedPeriod} onValueChange={onSelectPeriod}>
-          <SelectTrigger className="bg-background border-input text-foreground w-full">
-            <SelectValue placeholder="Time Period" className="truncate" />
-          </SelectTrigger>
-          <SelectContent className="bg-card border-border w-full">
-            <SelectItem value="all" className="text-foreground">All Periods</SelectItem>
-            {periods.map((p) => (
-              <SelectItem key={p} value={p} className="text-foreground" title={p}>
-                <span className="truncate">{p}</span>
+              <SelectItem
+                key={a}
+                value={a}
+                className="text-zinc-300 focus:bg-zinc-800 focus:text-white"
+                title={a}
+              >
+                {a}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
 
-        <Button onClick={onClear} variant="outline" size="sm" className="border-border text-muted-foreground hover:bg-accent/10">
-          Clear
-        </Button>
+        {/* Period + Clear */}
+        <div className="flex gap-2">
+          <Select value={selectedPeriod} onValueChange={onSelectPeriod}>
+            <SelectTrigger className="flex-1 border-zinc-800 bg-zinc-900 text-sm text-white focus:ring-0">
+              <SelectValue placeholder="All Periods" />
+            </SelectTrigger>
+            <SelectContent className="border-zinc-800 bg-zinc-900">
+              <SelectItem
+                value="all"
+                className="text-zinc-300 focus:bg-zinc-800 focus:text-white"
+              >
+                All Periods
+              </SelectItem>
+              {periods.map((p) => (
+                <SelectItem
+                  key={p}
+                  value={p}
+                  className="text-zinc-300 focus:bg-zinc-800 focus:text-white"
+                >
+                  {p}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          {hasActiveFilters && (
+            <button
+              onClick={onClear}
+              className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-zinc-900 px-3 text-xs text-zinc-400 transition-all hover:border-zinc-600 hover:text-white"
+            >
+              <X className="h-3.5 w-3.5" />
+              Clear
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

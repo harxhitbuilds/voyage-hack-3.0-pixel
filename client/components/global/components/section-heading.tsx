@@ -7,7 +7,7 @@ interface SectionHeadingProps {
 
 const SectionHeading = ({ heading, className }: SectionHeadingProps) => {
   return (
-    <h1 className={cn("text-2xl font-robert-medium font-bold", className)}>
+    <h1 className={cn("font-robert-medium text-2xl font-bold", className)}>
       {heading}
     </h1>
   );
