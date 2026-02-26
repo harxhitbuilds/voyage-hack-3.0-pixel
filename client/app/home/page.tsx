@@ -15,10 +15,9 @@ export default function Home() {
   }, [getPersonalized, getTrending]);
 
   return (
-    <main className="min-h-screen space-y-16 py-8 pb-24">
+    <main className="min-h-screen space-y-10 py-8 pb-28">
       <HomeHeader />
-
-      <div className="space-y-16 px-1">
+      <div className="space-y-10 px-1">
         <RecommendationSection
           heading="Recommended for You"
           type="personalized"

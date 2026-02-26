@@ -1,13 +1,18 @@
 "use client";
 
 import { format } from "date-fns";
-import { Clock, DollarSign, Eye, MapPin, Share2, Users } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  DollarSign,
+  Eye,
+  MapPin,
+  Share2,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { TableCell, TableRow } from "@/components/ui/table";
 import type { Trip } from "@/store/trip.store";
 
 interface TripTableRowProps {
@@ -16,40 +21,48 @@ interface TripTableRowProps {
 
 type CallStatus = "queued" | "ringing" | "in-progress" | "ended" | "failed";
 
-const statusConfig: Record<CallStatus, { label: string; className: string }> = {
+const statusConfig: Record<
+  CallStatus,
+  { label: string; color: string; dot: string }
+> = {
   queued: {
     label: "Queued",
-    className: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+    color: "text-amber-400 border-amber-500/20 bg-amber-500/8",
+    dot: "bg-amber-400",
   },
   ringing: {
     label: "Ringing",
-    className: "bg-blue-500/10 text-blue-400 border-blue-500/20 animate-pulse",
+    color: "text-blue-400 border-blue-500/20 bg-blue-500/8",
+    dot: "bg-blue-400 animate-ping",
   },
   "in-progress": {
     label: "In Progress",
-    className: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
+    color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/8",
+    dot: "bg-emerald-400 animate-pulse",
   },
   ended: {
     label: "Completed",
-    className: "bg-zinc-700/60 text-zinc-300 border-zinc-700",
+    color: "text-zinc-400 border-white/8 bg-white/4",
+    dot: "bg-zinc-500",
   },
   failed: {
     label: "Failed",
-    className: "bg-red-500/10 text-red-400 border-red-500/20",
+    color: "text-red-400 border-red-500/20 bg-red-500/8",
+    dot: "bg-red-400",
   },
 };
 
-const formatDuration = (seconds?: number): string => {
+const formatDuration = (seconds?: number) => {
   if (!seconds) return "—";
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 };
 
-const formatDate = (dateString?: string): string => {
+const formatDate = (dateString?: string) => {
   if (!dateString) return "—";
   try {
-    return format(new Date(dateString), "MMM dd, yyyy · HH:mm");
+    return format(new Date(dateString), "MMM dd, yyyy");
   } catch {
     return "—";
   }
@@ -58,117 +71,111 @@ const formatDate = (dateString?: string): string => {
 const TripTableRow = ({ trip }: TripTableRowProps) => {
   const status = (trip.callStatus as CallStatus) ?? "queued";
   const config = statusConfig[status] ?? statusConfig.queued;
+  const destination = trip.tripDetails?.destination || "Unknown destination";
+  const initials = destination.slice(0, 2).toUpperCase();
 
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}/share/${trip._id}`;
-    const shareData = {
-      title: trip.name || "Check out my trip!",
-      text: "I planned an amazing trip using AI. Check it out!",
-      url: shareUrl,
-    };
-
     try {
       if (navigator.share) {
-        await navigator.share(shareData);
-        toast.success("Trip shared successfully!");
+        await navigator.share({ title: trip.name || "My Trip", url: shareUrl });
+        toast.success("Trip shared!");
       } else {
         await navigator.clipboard.writeText(shareUrl);
-        toast.success("Share link copied to clipboard!");
+        toast.success("Link copied!");
       }
     } catch (err: unknown) {
       if (err instanceof Error && err.name !== "AbortError") {
         try {
           await navigator.clipboard.writeText(shareUrl);
-          toast.success("Share link copied to clipboard!");
+          toast.success("Link copied!");
         } catch {
-          toast.error("Failed to copy share link");
+          toast.error("Failed to copy link");
         }
       }
     }
   };
 
   return (
-    <TableRow className="group border-zinc-800 transition-colors hover:bg-zinc-800/40">
+    <div className="group grid grid-cols-1 items-center gap-3 px-6 py-4 transition-colors hover:bg-white/2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1.2fr_auto] md:gap-4">
       {/* Destination */}
-      <TableCell>
-        <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900">
-            <MapPin className="h-3.5 w-3.5 text-zinc-400" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-white">
-              {trip.tripDetails?.destination || "Not specified"}
-            </p>
-            {trip.tripDetails?.startDate && (
-              <p className="mt-0.5 text-xs text-zinc-500">
-                {format(new Date(trip.tripDetails.startDate), "MMM dd, yyyy")}
-              </p>
-            )}
-          </div>
+      <div className="flex min-w-0 items-center gap-3">
+        {/* Avatar */}
+        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/8 bg-white/5">
+          <span className="text-xs font-black text-zinc-300">{initials}</span>
+          {status === "in-progress" && (
+            <span className="absolute right-0 bottom-0 h-2.5 w-2.5 translate-x-0.5 translate-y-0.5 rounded-full border-2 border-[#0d0d0d] bg-emerald-400" />
+          )}
         </div>
-      </TableCell>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-semibold text-white">
+            {destination}
+          </p>
+          {trip.tripDetails?.startDate ? (
+            <p className="mt-0.5 flex items-center gap-1 text-[11px] text-zinc-600">
+              <Calendar className="h-2.5 w-2.5" />
+              {format(new Date(trip.tripDetails.startDate), "MMM dd, yyyy")}
+            </p>
+          ) : (
+            <p className="mt-0.5 flex items-center gap-1 text-[11px] text-zinc-600">
+              <MapPin className="h-2.5 w-2.5" />
+              AI Trip
+            </p>
+          )}
+        </div>
+      </div>
 
       {/* Status */}
-      <TableCell>
-        <Badge
-          className={`rounded-full border text-xs font-medium ${config.className}`}
+      <div>
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${config.color}`}
         >
+          <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
           {config.label}
-        </Badge>
-      </TableCell>
+        </span>
+      </div>
 
       {/* Duration */}
-      <TableCell>
-        <div className="flex items-center gap-1.5 text-sm text-zinc-400">
-          <Clock className="h-3.5 w-3.5" />
-          {formatDuration(trip.callDuration)}
-        </div>
-      </TableCell>
+      <div className="flex items-center gap-1.5 text-sm text-zinc-400">
+        <Clock className="h-3.5 w-3.5 shrink-0 text-zinc-700" />
+        {formatDuration(trip.callDuration)}
+      </div>
 
       {/* Travelers */}
-      <TableCell>
-        <div className="flex items-center gap-1.5 text-sm text-zinc-400">
-          <Users className="h-3.5 w-3.5" />
-          {trip.tripDetails?.travelers || "—"}
-        </div>
-      </TableCell>
+      <div className="flex items-center gap-1.5 text-sm text-zinc-400">
+        <Users className="h-3.5 w-3.5 shrink-0 text-zinc-700" />
+        {trip.tripDetails?.travelers || "—"}
+      </div>
 
       {/* Budget */}
-      <TableCell>
-        <div className="flex items-center gap-1.5 text-sm text-zinc-400">
-          <DollarSign className="h-3.5 w-3.5" />
-          {trip.tripDetails?.budget || "—"}
-        </div>
-      </TableCell>
+      <div className="flex items-center gap-1.5 text-sm text-zinc-400">
+        <DollarSign className="h-3.5 w-3.5 shrink-0 text-zinc-700" />
+        {trip.tripDetails?.budget || "—"}
+      </div>
 
       {/* Created */}
-      <TableCell>
-        <span className="text-xs text-zinc-500">
-          {formatDate(trip.createdAt)}
-        </span>
-      </TableCell>
+      <div className="text-[11px] text-zinc-600">
+        {formatDate(trip.createdAt)}
+      </div>
 
       {/* Actions */}
-      <TableCell>
-        <div className="flex items-center gap-2">
-          <Link
-            href={`/home/trip/${trip._id}`}
-            className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-xs font-medium text-white transition-all hover:border-zinc-500 hover:bg-zinc-700"
-          >
-            <Eye className="h-3 w-3" />
-            View
-          </Link>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={handleShare}
-            className="h-7 w-7 rounded-lg border border-zinc-800 p-0 text-zinc-500 hover:border-zinc-600 hover:text-white"
-          >
-            <Share2 className="h-3 w-3" />
-          </Button>
-        </div>
-      </TableCell>
-    </TableRow>
+      <div className="flex items-center gap-2">
+        <Link
+          href={`/home/trip/${trip._id}`}
+          className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 text-xs font-semibold text-zinc-300 transition-all hover:border-white/15 hover:bg-white/8 hover:text-white"
+        >
+          <Eye className="h-3 w-3" />
+          View
+        </Link>
+        <button
+          onClick={handleShare}
+          className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/6 text-zinc-600 transition-all hover:border-white/12 hover:text-zinc-300"
+          title="Share trip"
+        >
+          <Share2 className="h-3 w-3" />
+        </button>
+      </div>
+    </div>
   );
 };
 

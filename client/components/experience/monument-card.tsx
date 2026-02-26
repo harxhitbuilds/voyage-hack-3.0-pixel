@@ -1,18 +1,10 @@
 "use client";
 
-import {
-  Box,
-  Calendar,
-  ExternalLink,
-  Eye,
-  Headset,
-  MapPin,
-} from "lucide-react";
+import { Box, ExternalLink, Eye, Headset, MapPin } from "lucide-react";
 
 import React from "react";
 
 import type { Monument } from "@/app/home/experience/page";
-import { Badge } from "@/components/ui/badge";
 
 interface Props {
   monument: Monument;
@@ -21,143 +13,178 @@ interface Props {
   onOpenArlink: (arlink?: string | null) => void;
 }
 
+const has3D = (m: Monument) => Boolean(m.sketchfabUid);
+const hasAR = (m: Monument) => Boolean(m.arlink);
+const hasVR = (m: Monument) => Boolean(m.vrHTMLPath);
+
 const MonumentCard: React.FC<Props> = ({
   monument,
   onOpenAr,
   onOpenVr,
   onOpenArlink,
 }) => {
+  const count = [has3D(monument), hasAR(monument), hasVR(monument)].filter(
+    Boolean,
+  ).length;
+
   return (
-    <article className="group flex flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/60 transition-all duration-300 hover:border-zinc-700 hover:shadow-2xl hover:shadow-black/40">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#0d0d0d] transition-all duration-300 hover:border-white/12 hover:shadow-2xl hover:shadow-black/60">
       {/* Image */}
-      <div className="relative h-48 overflow-hidden bg-zinc-800">
+      <div className="relative h-52 overflow-hidden bg-zinc-900">
         {monument.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
           <img
             src={monument.imageUrl}
             alt={monument.name}
-            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center">
-            <MapPin className="h-8 w-8 text-zinc-600" />
+          <div className="flex h-full w-full items-center justify-center bg-zinc-900">
+            <MapPin className="h-10 w-10 text-zinc-700" />
           </div>
         )}
-        {/* Overlay */}
-        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/20 to-transparent" />
 
-        {/* Capability badges top-right */}
-        <div className="absolute top-3 right-3 flex gap-1.5">
-          {monument.sketchfabUid && (
-            <span className="rounded-full border border-blue-500/30 bg-blue-500/20 px-2 py-0.5 text-xs font-medium text-blue-400 backdrop-blur-sm">
+        {/* Image overlay layers */}
+        <div className="absolute inset-0 bg-linear-to-t from-[#0d0d0d] via-black/30 to-transparent" />
+
+        {/* Top: capability chips */}
+        <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
+          {has3D(monument) && (
+            <span className="rounded-md border border-blue-500/30 bg-black/70 px-2 py-0.5 text-[10px] font-bold text-blue-400 backdrop-blur-sm">
               3D
             </span>
           )}
-          {monument.arlink && (
-            <span className="rounded-full border border-emerald-500/30 bg-emerald-500/20 px-2 py-0.5 text-xs font-medium text-emerald-400 backdrop-blur-sm">
+          {hasAR(monument) && (
+            <span className="rounded-md border border-emerald-500/30 bg-black/70 px-2 py-0.5 text-[10px] font-bold text-emerald-400 backdrop-blur-sm">
               AR
             </span>
           )}
-          {monument.vrHTMLPath && (
-            <span className="rounded-full border border-purple-500/30 bg-purple-500/20 px-2 py-0.5 text-xs font-medium text-purple-400 backdrop-blur-sm">
+          {hasVR(monument) && (
+            <span className="rounded-md border border-purple-500/30 bg-black/70 px-2 py-0.5 text-[10px] font-bold text-purple-400 backdrop-blur-sm">
               VR
             </span>
           )}
         </div>
 
-        {/* Name + location over image bottom */}
-        <div className="absolute bottom-0 left-0 p-4">
+        {/* Experience count dot */}
+        {count > 0 && (
+          <div className="absolute top-3 left-3">
+            <span className="rounded-full border border-white/15 bg-black/70 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
+              {count} {count === 1 ? "experience" : "experiences"}
+            </span>
+          </div>
+        )}
+
+        {/* Name overlay at bottom of image */}
+        <div className="absolute right-0 bottom-0 left-0 px-4 pb-4">
           <h3
-            className="text-base leading-tight font-bold text-white"
+            className="text-base leading-tight font-black text-white"
             title={monument.name}
           >
             {monument.name}
           </h3>
-          <div className="mt-1 flex items-center gap-1 text-xs text-zinc-400">
-            <MapPin className="h-3 w-3" />
-            <span className="truncate" title={monument.location}>
-              {monument.location || "India"}
-            </span>
+          <div className="mt-1 flex items-center gap-1.5 text-xs text-zinc-400">
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span className="truncate">{monument.location || "India"}</span>
+            {monument.yearBuilt && (
+              <>
+                <span className="text-zinc-700">·</span>
+                <span className="text-zinc-500">{monument.yearBuilt}</span>
+              </>
+            )}
           </div>
         </div>
       </div>
 
       {/* Body */}
-      <div className="flex flex-1 flex-col space-y-3 p-4">
-        <p className="line-clamp-2 text-xs leading-relaxed text-zinc-400">
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        {/* Description */}
+        <p className="line-clamp-2 text-[12px] leading-relaxed text-zinc-500">
           {monument.description ||
             "A remarkable piece of India's architectural heritage."}
         </p>
 
-        {/* Meta */}
-        <div className="flex flex-wrap gap-2">
-          {monument.yearBuilt && (
-            <Badge className="gap-1 rounded-full border-0 bg-zinc-800 px-2.5 py-0.5 text-xs font-normal text-zinc-400">
-              <Calendar className="h-3 w-3" />
-              {monument.yearBuilt}
-            </Badge>
-          )}
-          {monument.architecture && (
-            <Badge className="max-w-30 truncate rounded-full border-0 bg-zinc-800 px-2.5 py-0.5 text-xs font-normal text-zinc-400">
-              {monument.architecture}
-            </Badge>
-          )}
-        </div>
+        {/* Architecture badge */}
+        {monument.architecture && (
+          <span className="self-start rounded-lg border border-white/6 bg-white/4 px-2.5 py-1 text-[10px] font-medium text-zinc-500">
+            {monument.architecture}
+          </span>
+        )}
 
         {/* Action buttons */}
-        <div className="mt-auto grid grid-cols-3 gap-2 pt-1">
-          {/* 3D */}
-          <button
+        <div className="mt-auto grid grid-cols-3 gap-2">
+          <ActionBtn
+            label="3D"
+            icon={<Box className="h-3.5 w-3.5" />}
+            enabled={has3D(monument)}
+            accent="blue"
             onClick={() =>
               monument.sketchfabUid && onOpenAr(String(monument.sketchfabUid))
             }
-            disabled={!monument.sketchfabUid}
-            className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-xs font-medium transition-all duration-200 ${
-              monument.sketchfabUid
-                ? "border-blue-500/30 bg-blue-500/10 text-blue-400 hover:border-blue-400/50 hover:bg-blue-500/20"
-                : "cursor-not-allowed border-zinc-800 bg-zinc-900 text-zinc-600"
-            }`}
-          >
-            <Box className="h-3.5 w-3.5" />
-            3D
-          </button>
-
-          {/* AR */}
-          <button
+          />
+          <ActionBtn
+            label="AR"
+            icon={<Eye className="h-3.5 w-3.5" />}
+            enabled={hasAR(monument)}
+            accent="emerald"
             onClick={() => onOpenArlink(monument.arlink)}
-            disabled={!monument.arlink}
-            className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-xs font-medium transition-all duration-200 ${
-              monument.arlink
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:border-emerald-400/50 hover:bg-emerald-500/20"
-                : "cursor-not-allowed border-zinc-800 bg-zinc-900 text-zinc-600"
-            }`}
-          >
-            <Eye className="h-3.5 w-3.5" />
-            AR
-          </button>
-
-          {/* VR */}
-          <button
+          />
+          <ActionBtn
+            label={hasVR(monument) ? "VR" : "VR"}
+            icon={<Headset className="h-3.5 w-3.5" />}
+            enabled={hasVR(monument)}
+            accent="purple"
+            suffix={
+              hasVR(monument) ? (
+                <ExternalLink className="ml-0.5 h-2.5 w-2.5" />
+              ) : undefined
+            }
             onClick={() => onOpenVr(monument)}
-            disabled={!monument.vrHTMLPath}
-            className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-xs font-medium transition-all duration-200 ${
-              monument.vrHTMLPath
-                ? "border-purple-500/30 bg-purple-500/10 text-purple-400 hover:border-purple-400/50 hover:bg-purple-500/20"
-                : "cursor-not-allowed border-zinc-800 bg-zinc-900 text-zinc-600"
-            }`}
-          >
-            <Headset className="h-3.5 w-3.5" />
-            {monument.vrHTMLPath ? (
-              <span className="flex items-center gap-0.5">
-                VR <ExternalLink className="h-2.5 w-2.5" />
-              </span>
-            ) : (
-              "VR"
-            )}
-          </button>
+          />
         </div>
       </div>
     </article>
   );
 };
+
+/* ── ActionBtn sub-component ── */
+type Accent = "blue" | "emerald" | "purple";
+const accentClasses: Record<Accent, string> = {
+  blue: "border-blue-500/25 bg-blue-500/8 text-blue-400 hover:border-blue-400/40 hover:bg-blue-500/15",
+  emerald:
+    "border-emerald-500/25 bg-emerald-500/8 text-emerald-400 hover:border-emerald-400/40 hover:bg-emerald-500/15",
+  purple:
+    "border-purple-500/25 bg-purple-500/8 text-purple-400 hover:border-purple-400/40 hover:bg-purple-500/15",
+};
+const disabledClass =
+  "cursor-not-allowed border-white/5 bg-white/2 text-zinc-700";
+
+const ActionBtn = ({
+  label,
+  icon,
+  enabled,
+  accent,
+  onClick,
+  suffix,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  enabled: boolean;
+  accent: Accent;
+  onClick: () => void;
+  suffix?: React.ReactNode;
+}) => (
+  <button
+    onClick={onClick}
+    disabled={!enabled}
+    className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-xs font-semibold transition-all duration-200 ${
+      enabled ? accentClasses[accent] : disabledClass
+    }`}
+  >
+    {icon}
+    {label}
+    {suffix}
+  </button>
+);
 
 export default MonumentCard;
