@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Medicaps VR Experience</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    
+    <script>
+      // 1. WALK CONTROLS (Same as before)
+      AFRAME.registerComponent('walk-controls', {
+        schema: { speed: {type: 'number', default: 10}, threshold: {type: 'number', default: -0.25} },
+        tick: function (time, timeDelta) {
+          var camera = this.el.sceneEl.camera;
+          if (!camera) return;
+          var direction = new THREE.Vector3();
+          camera.getWorldDirection(direction);
+          
+          if (direction.y < this.data.threshold) {
+            var cursor = document.querySelector('#my-cursor');
+            if(cursor) cursor.setAttribute('material', 'color', '#00FF00'); 
+            var rig = this.el;
+            var pos = rig.getAttribute('position');
+            var step = (this.data.speed * timeDelta) / 1000;
+            pos.x += direction.x * step;
+            pos.z += direction.z * step;
+            rig.setAttribute('position', pos);
+          } else {
+            var cursor = document.querySelector('#my-cursor');
+            if(cursor) cursor.setAttribute('material', 'color', 'white');
+          }
+        }
+      });
+
+      // 2. ONE-TAP START (Audio + Enter VR)
+      AFRAME.registerComponent('start-experience', {
+        init: function () {
+          // We bind this to the specific #overlay element, not the whole body
+          // so clicking around later doesn't re-trigger it.
+          var overlay = document.querySelector('#overlay');
+          var scene = this.el.sceneEl;
+
+          overlay.addEventListener('click', function () {
+            
+            // A. Start Audio
+            var sound = document.querySelector('#ambient-sound');
+            if(sound) sound.components.sound.playSound();
+
+            // B. Enter VR Mode Immediately
+            scene.enterVR();
+
+            // C. Hide Overlay
+            overlay.style.display = 'none';
+          });
+        }
+      });
+    </script>
+
+    <style>
+      /* Style for the "Start" Screen */
+      #overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0,0,0,0.9); z-index: 9999;
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        color: white; font-family: sans-serif;
+      }
+      #start-btn {
+        border: 2px solid white; padding: 20px 40px; font-size: 24px;
+        background: transparent; color: white; cursor: pointer;
+        border-radius: 50px; transition: 0.3s;
+      }
+      #start-btn:active { background: white; color: black; }
+    </style>
+  </head>
+  
+  <body>
+    
+    <div id="overlay">
+      <h1>Medicaps VR</h1>
+      <p>Put on your headset & tap below</p>
+      <div id="start-btn">ENTER EXPERIENCE</div>
+    </div>
+
+    <a-scene start-experience 
+             vr-mode-ui="enabled: false" 
+             fog="type: exponential; color: #87CEEB; density: 0.002">
+      
+      <a-assets>
+        <a-asset-item id="Medicaps" src="./3Dmodels/medicaps.glb"></a-asset-item>
+        <img id="grass-texture" src="./assets/grass.jpg">
+        <img id="sky-texture" src="./assets/sky.jpg">
+        <audio id="wind-sound" src="./assets/wind.wav" preload="auto"></audio>
+      </a-assets>
+
+      <a-sky src="#sky-texture" rotation="0 -130 0"></a-sky>
+
+      <a-entity id="ambient-sound" sound="src: #wind-sound; loop: true; volume: 1"></a-entity>
+
+      <a-plane 
+        src="#grass-texture" 
+        repeat="200 200" 
+        position="0 0 0" 
+        rotation="-90 0 0" 
+        width="1000" 
+        height="1000">
+      </a-plane>
+      
+      <!-- <a-entity light="type: hemisphere; color: #ffffff; groundColor: #444444; intensity: 0.8"></a-entity> -->
+       <a-entity light="type: ambient; intensity: 1.5"></a-entity>
+      <a-entity light="type: directional; intensity: 1.0; position: -1 1 0; castShadow: true"></a-entity>
+
+      <a-entity gltf-model="#Medicaps" position="0 18 -50" scale="30 30 30"></a-entity>
+
+      <a-entity id="rig" position="0 1.6 0" walk-controls>
+        <a-camera look-controls="pointerLockEnabled: true">
+          <a-entity id="my-cursor" cursor="fuse: false" position="0 0 -1" geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03" material="color: white; shader: flat; opacity: 0.8"></a-entity>
+          <a-text value="Look DOWN to Walk" position="0 -0.5 -1" align="center" width="2.5" color="white"></a-text>
+        </a-camera>
+      </a-entity>
+
+    </a-scene>
+  </body>
+</html>
