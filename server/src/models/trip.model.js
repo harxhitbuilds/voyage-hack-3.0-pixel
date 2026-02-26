@@ -43,6 +43,15 @@ const tripSchema = new mongoose.Schema(
       tripSummary: { type: String },
       processedAt: { type: Date },
     },
+    itinerary: [
+      {
+        day: { type: Number },
+        title: { type: String },
+        activities: [{ type: String }],
+        estimatedCost: { type: String },
+        tips: { type: String },
+      },
+    ],
     assistantId: { type: String },
     phoneNumberId: { type: String },
     createdAt: { type: Date, default: Date.now },

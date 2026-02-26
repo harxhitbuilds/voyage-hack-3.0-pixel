@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import ProfileCompletion from "@/components/profile/completion";
 import ExperienceBackground from "@/components/profile/expierence-bg";
 import ProfileHeader from "@/components/profile/header";
+import HeritageScore from "@/components/profile/heritage-score";
 import InterestsPreferences from "@/components/profile/interest-pre";
 import ProfileCard from "@/components/profile/profile-card";
 import SpecialRequirements from "@/components/profile/special-req";
@@ -142,6 +143,7 @@ const Profile = () => {
               accentColor="blue-500"
             />
             <TravelStats displayUser={displayUser} accentColor="blue-500" />
+            <HeritageScore user={displayUser} />
             <ProfileCompletion
               displayUser={displayUser}
               accentColor="blue-500"

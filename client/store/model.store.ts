@@ -10,6 +10,9 @@ export interface ModelItem {
   description?: string;
   vrHTMLPath?: string | null;
   sketchfabUid?: string | null;
+  arlink?: string | null;
+  architecture?: string;
+  yearBuilt?: string | number;
   [key: string]: any;
 }
 
@@ -18,6 +21,7 @@ interface ModelState {
   isLoading: boolean;
   error: string | null;
   getModels: () => Promise<void>;
+  trackVisit: (monumentId: string) => Promise<void>;
 }
 
 export const useModelStore = create<ModelState>((set) => ({
@@ -39,6 +43,14 @@ export const useModelStore = create<ModelState>((set) => ({
       set({ error: message });
     } finally {
       set({ isLoading: false });
+    }
+  },
+
+  trackVisit: async (monumentId: string) => {
+    try {
+      await apiClient.post("/3dmodel/visit", { monumentId });
+    } catch {
+      // silently fail — tracking is non-critical
     }
   },
 }));

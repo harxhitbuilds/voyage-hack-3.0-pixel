@@ -35,9 +35,19 @@ Please extract and return ONLY a valid JSON object with these fields:
   "preferences": ["array of travel preferences mentioned"],
   "activities": ["array of activities mentioned"],
   "keyPoints": ["3-5 key points from conversation"],
-  "tripSummary": "2-3 sentence summary of the planned trip"
+  "tripSummary": "2-3 sentence summary of the planned trip",
+  "itinerary": [
+    {
+      "day": 1,
+      "title": "Short day title e.g. Arrival & City Exploration",
+      "activities": ["activity 1", "activity 2", "activity 3"],
+      "estimatedCost": "₹X,XXX",
+      "tips": "One practical local tip for this day"
+    }
+  ]
 }
 
+Generate the itinerary based on the destination, dates, budget, and activities mentioned. If dates are unclear, generate a 3-5 day itinerary as default.
 Return only the JSON object, no other text.
 `;
 
@@ -402,12 +412,8 @@ export const autoFetchTranscript = async (callId) => {
               callDuration: call.duration || 0,
               tripDetails: {
                 destination: geminiData.destination,
-                startDate: geminiData.startDate
-                  ? new Date(geminiData.startDate)
-                  : null,
-                endDate: geminiData.endDate
-                  ? new Date(geminiData.endDate)
-                  : null,
+                startDate: geminiData.startDate ? new Date(geminiData.startDate) : null,
+                endDate: geminiData.endDate ? new Date(geminiData.endDate) : null,
                 budget: geminiData.budget,
                 travelers: geminiData.travelers,
                 preferences: geminiData.preferences || [],
@@ -418,6 +424,7 @@ export const autoFetchTranscript = async (callId) => {
                 tripSummary: geminiData.tripSummary || "",
                 processedAt: new Date(),
               },
+              itinerary: geminiData.itinerary || [],
             }
           );
 
@@ -478,12 +485,8 @@ export const startTranscriptPolling = () => {
               callDuration: call.duration || 0,
               tripDetails: {
                 destination: geminiData.destination,
-                startDate: geminiData.startDate
-                  ? new Date(geminiData.startDate)
-                  : null,
-                endDate: geminiData.endDate
-                  ? new Date(geminiData.endDate)
-                  : null,
+                startDate: geminiData.startDate ? new Date(geminiData.startDate) : null,
+                endDate: geminiData.endDate ? new Date(geminiData.endDate) : null,
                 budget: geminiData.budget,
                 travelers: geminiData.travelers,
                 preferences: geminiData.preferences || [],
@@ -494,6 +497,7 @@ export const startTranscriptPolling = () => {
                 tripSummary: geminiData.tripSummary || "",
                 processedAt: new Date(),
               },
+              itinerary: geminiData.itinerary || [],
             });
 
             console.log(
@@ -576,3 +580,58 @@ export const getTripInsights = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Failed to fetch trip insights", [error.message]);
   }
 });
+
+// Server-Sent Events: stream live call status to the client
+export const streamCallStatus = async (req, res) => {
+  const { callId } = req.params;
+
+  // SSE headers
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders();
+
+  const send = (data) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  let attempts = 0;
+  const maxAttempts = 24; // poll for max 4 minutes (24 × 10s)
+
+  const poll = async () => {
+    try {
+      attempts++;
+      const trip = await Trip.findOne({ callId }).lean();
+      const vapiCall = await vapi.calls.get(callId).catch(() => null);
+
+      const status = vapiCall?.status || trip?.callStatus || "queued";
+      const hasTranscript = !!(trip?.transcript);
+      const hasItinerary = !!(trip?.itinerary?.length);
+
+      send({ status, hasTranscript, hasItinerary, attempt: attempts });
+
+      if (status === "ended" && hasItinerary) {
+        send({ status: "complete", hasTranscript, hasItinerary });
+        res.end();
+        return;
+      }
+
+      if (attempts >= maxAttempts) {
+        send({ status, hasTranscript, hasItinerary, timeout: true });
+        res.end();
+        return;
+      }
+
+      setTimeout(poll, 10000); // poll every 10s
+    } catch (err) {
+      send({ error: err.message });
+      res.end();
+    }
+  };
+
+  // Start immediately
+  poll();
+
+  // Clean up on client disconnect
+  req.on("close", () => res.end());
+};

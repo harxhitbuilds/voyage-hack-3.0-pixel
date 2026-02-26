@@ -27,6 +27,13 @@ const userSchema = new mongoose.Schema(
         ref: "Trip",
       },
     ],
+
+    visitedMonuments: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ThreeDModel",
+      },
+    ],
   },
   { timestamps: true }
 );

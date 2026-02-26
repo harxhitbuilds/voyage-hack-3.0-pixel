@@ -1,12 +1,15 @@
 "use client";
 
 import { format } from "date-fns";
-import { Download, Share } from "lucide-react";
+import { Download, Loader2, Share } from "lucide-react";
 import { toast } from "sonner";
+
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SectionHeading } from "@/components/ui/section-heading";
 import type { Trip } from "@/store/trip.store";
+import { exportTripPDF } from "@/utils/export-pdf";
 
 import TripStatusBadge from "./trip-status-badge";
 
@@ -16,6 +19,8 @@ interface TripDetailHeaderProps {
 }
 
 const TripDetailHeader = ({ trip, tripId }: TripDetailHeaderProps) => {
+  const [exporting, setExporting] = useState(false);
+
   const createdAt = trip.createdAt
     ? format(new Date(trip.createdAt), "MMM dd, yyyy 'at' HH:mm")
     : null;
@@ -43,6 +48,19 @@ const TripDetailHeader = ({ trip, tripId }: TripDetailHeaderProps) => {
           toast.error("Failed to copy share link");
         }
       }
+    }
+  };
+
+  const handleExport = async () => {
+    setExporting(true);
+    try {
+      await exportTripPDF(trip);
+      toast.success("PDF downloaded successfully!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to export PDF");
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -75,10 +93,21 @@ const TripDetailHeader = ({ trip, tripId }: TripDetailHeaderProps) => {
         <Button
           variant="outline"
           size="sm"
-          className="gap-2 border-zinc-700 bg-zinc-800/60 text-zinc-300 hover:border-zinc-500 hover:text-white"
+          onClick={handleExport}
+          disabled={exporting}
+          className="gap-2 border-zinc-700 bg-zinc-800/60 text-zinc-300 hover:border-zinc-500 hover:text-white disabled:opacity-50"
         >
-          <Download className="h-4 w-4" />
-          Export
+          {exporting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Exporting…
+            </>
+          ) : (
+            <>
+              <Download className="h-4 w-4" />
+              Export PDF
+            </>
+          )}
         </Button>
       </div>
     </div>

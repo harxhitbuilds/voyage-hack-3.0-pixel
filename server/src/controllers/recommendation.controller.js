@@ -3,12 +3,16 @@ import asyncHandler from "../utils/async-handle.js";
 import ApiResponse from "../utils/response.js";
 import ApiError from "../utils/error.js";
 import User from "../models/user.model.js";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import "dotenv/config";
 
 import {
   fallbackRecommendations,
   fallbackTrendingPlaces,
 } from "../fallback-response/index.js";
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
 const fetchDestinationImage = async (searchQuery) => {
   try {
@@ -84,39 +88,90 @@ export const getPersonalizedRecommendations = asyncHandler(async (req, res) => {
     ]);
   }
 
-  // Return fallback recommendations directly to avoid Gemini API limits
-  const fallbacks = fallbackRecommendations();
+  const prefs = user.travelPreferences || {};
+  const hasPreferences =
+    (prefs.travelStyle?.length || 0) +
+    (prefs.budgetRange?.length || 0) +
+    (prefs.groupSize?.length || 0) > 0;
 
-  // Add some personalization simulation if possible, or just return fallbacks
-  const personalizedFallbacks = fallbacks.map((rec) => ({
-    ...rec,
-    generatedAt: new Date().toISOString(),
-    userId: req.user._id,
-    type: "personalized_fallback",
-  }));
+  // If no preferences yet, return fallback with note
+  if (!hasPreferences) {
+    const fallbacks = fallbackRecommendations().map((rec, i) => ({
+      id: `fallback_${i}`,
+      ...rec,
+      type: "popular",
+      generatedAt: new Date().toISOString(),
+    }));
+    return res.status(200).json(
+      new ApiResponse(200, { recommendations: fallbacks }, "Popular destinations (complete your profile for personalized picks)"),
+    );
+  }
 
-  return res
-    .status(200)
-    .json(
+  try {
+    const prompt = `
+You are a travel recommendation AI. Based on this traveler's preferences, suggest 6 Indian destinations.
+
+Traveler Profile:
+- Travel Style: ${prefs.travelStyle?.join(", ") || "not specified"}
+- Budget Range: ${prefs.budgetRange?.join(", ") || "not specified"}
+- Group Size: ${prefs.groupSize?.join(", ") || "solo"}
+- Trip Duration: ${prefs.tripDuration?.join(", ") || "flexible"}
+- Travel Frequency: ${prefs.travelFrequency?.join(", ") || "occasional"}
+- Accommodation: ${prefs.accommodationType?.join(", ") || "any"}
+- Transport: ${prefs.transportationPreference?.join(", ") || "any"}
+- Hometown: ${user.hometown || "India"}
+
+Return ONLY a valid JSON array of 6 objects with this exact structure:
+[{
+  "placeName": "Destination Name",
+  "description": "2 sentence description",
+  "picture": "https://images.unsplash.com/photo-1524492412937-b28074a5d7da?auto=format&fit=crop&w=800&q=80",
+  "fitReasoning": ["reason 1 matching their style", "reason 2", "reason 3"],
+  "highlights": ["highlight 1", "highlight 2", "highlight 3", "highlight 4"],
+  "bestTimeToVisit": "Month range",
+  "estimatedBudget": "₹X,XXX-XX,XXX per day",
+  "travelDuration": "X-X days",
+  "matchScore": 92
+}]
+
+Use real Unsplash landscape photo URLs for Indian destinations. Return ONLY the JSON array.`;
+
+    const result = await geminiModel.generateContent(prompt);
+    const text = result.response.text().replace(/```json|```/g, "").trim();
+    const recommendations = JSON.parse(text);
+
+    return res.status(200).json(
       new ApiResponse(
         200,
-        { recommendations: personalizedFallbacks },
-        "Personalized travel recommendations retrieved (fallback)",
+        {
+          recommendations: recommendations.map((r, i) => ({
+            id: `ai_${Date.now()}_${i}`,
+            ...r,
+            type: "personalized",
+            generatedAt: new Date().toISOString(),
+          })),
+        },
+        "Personalized recommendations generated successfully",
       ),
     );
+  } catch (err) {
+    console.error("❌ Gemini personalization error:", err.message);
+    // Graceful fallback
+    const fallbacks = fallbackRecommendations().map((rec, i) => ({
+      id: `fallback_${i}`,
+      ...rec,
+      type: "popular",
+      generatedAt: new Date().toISOString(),
+    }));
+    return res.status(200).json(
+      new ApiResponse(200, { recommendations: fallbacks }, "Popular destinations"),
+    );
+  }
 });
 
 export const getTrendingRecommendations = asyncHandler(async (req, res) => {
-  // Return fallback trending places directly to avoid Gemini API limits
   const trending = fallbackTrendingPlaces();
-
-  return res
-    .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { recommendations: trending },
-        "Trending travel recommendations retrieved (fallback)",
-      ),
-    );
+  return res.status(200).json(
+    new ApiResponse(200, { recommendations: trending }, "Trending destinations"),
+  );
 });

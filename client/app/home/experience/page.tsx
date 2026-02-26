@@ -13,7 +13,7 @@ import { type ModelItem, useModelStore } from "@/store/model.store";
 export type Monument = ModelItem;
 
 export default function MonumentsPage() {
-  const { models, getModels, isLoading } = useModelStore();
+  const { models, getModels, isLoading, trackVisit } = useModelStore();
   const [isArModalOpen, setIsArModalOpen] = useState(false);
   const [selectedModelUid, setSelectedModelUid] = useState<string | null>(null);
 
@@ -101,9 +101,10 @@ export default function MonumentsPage() {
   const vrEnabledCount = models.filter((m: Monument) => m.vrHTMLPath).length;
   const arEnabledCount = models.filter((m: Monument) => m.sketchfabUid).length;
 
-  const openArModal = (uid: string) => {
+  const openArModal = (uid: string, monumentId?: string) => {
     setSelectedModelUid(uid);
     setIsArModalOpen(true);
+    if (monumentId) trackVisit(monumentId);
   };
 
   if (isLoading) {

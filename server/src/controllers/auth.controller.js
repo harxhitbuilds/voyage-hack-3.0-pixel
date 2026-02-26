@@ -127,11 +127,17 @@ export const checkAuth = asyncHandler(async (req, res) => {
 
 export const getUserProfile = asyncHandler(async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("-__v");
+    const user = await User.findById(req.user._id).select("-__v").lean();
 
     if (!user) {
       throw new ApiError(404, "User not found", []);
     }
+
+    // Attach derived fields for gamification
+    user.tripCount = Array.isArray(user.trips) ? user.trips.length : 0;
+    user.visitedMonumentCount = Array.isArray(user.visitedMonuments)
+      ? user.visitedMonuments.length
+      : 0;
 
     return res
       .status(200)

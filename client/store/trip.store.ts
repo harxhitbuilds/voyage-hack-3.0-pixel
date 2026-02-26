@@ -25,6 +25,14 @@ export interface AiInsights {
   processedAt?: string;
 }
 
+export interface ItineraryDay {
+  day: number;
+  title: string;
+  activities: string[];
+  estimatedCost?: string;
+  tips?: string;
+}
+
 export interface Trip {
   _id: string;
   name?: string;
@@ -35,6 +43,7 @@ export interface Trip {
   transcript?: string;
   tripDetails?: TripDetails;
   aiInsights?: AiInsights;
+  itinerary?: ItineraryDay[];
   createdAt?: string;
   updatedAt?: string;
 }

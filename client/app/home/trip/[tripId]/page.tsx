@@ -7,18 +7,17 @@ import { use, useEffect, useState } from "react";
 import TripDetailHeader from "@/components/trip-detail/trip-detail-header";
 import TripDetailsTab from "@/components/trip-detail/trip-details-tab";
 import TripInsightsTab from "@/components/trip-detail/trip-insights-tab";
+import TripItineraryTab from "@/components/trip-detail/trip-itinerary-tab";
 import TripOverviewTab from "@/components/trip-detail/trip-overview-tab";
 import TripTabs, { type TabId } from "@/components/trip-detail/trip-tabs";
 import TripTranscriptTab from "@/components/trip-detail/trip-transcript-tab";
 import { useTripStore } from "@/store/trip.store";
-
 
 interface PageProps {
   params: Promise<{ tripId: string }>;
 }
 
 export default function TripDetailPage({ params }: PageProps) {
-
   const { tripId } = use(params);
 
   const { trip, loading, error, getTripById } = useTripStore();
@@ -66,6 +65,7 @@ export default function TripDetailPage({ params }: PageProps) {
       {/* Tab content */}
       {activeTab === "overview" && <TripOverviewTab trip={trip} />}
       {activeTab === "details" && <TripDetailsTab trip={trip} />}
+      {activeTab === "itinerary" && <TripItineraryTab trip={trip} />}
       {activeTab === "transcript" && <TripTranscriptTab trip={trip} />}
       {activeTab === "insights" && <TripInsightsTab trip={trip} />}
     </div>
