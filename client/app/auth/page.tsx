@@ -25,30 +25,33 @@ const AuthPage = () => {
         "115% 120%",
         "100% 100%",
       ],
-      transition: {
-        duration: 6,
-        repeat: Infinity,
-        ease: "easeInOut",
-      },
+      transition: { duration: 6, repeat: Infinity, ease: "easeInOut" },
     });
   }, [controls]);
 
   return (
-    <div className="relative h-screen min-h-screen w-full bg-black px-56 py-12">
+    <div className="relative min-h-screen w-full bg-black px-4 py-6 sm:px-8 sm:py-8 md:px-12 md:py-10 lg:px-20 lg:py-12">
+      {/* Animated gradient background */}
       <motion.div
         className="absolute inset-0 z-0"
         animate={controls}
         style={{
-          backgroundImage: `
-            radial-gradient(125% 125% at 50% 10%, #000000 40%, #f59e0b 100%)
-          `,
+          backgroundImage: `radial-gradient(125% 125% at 50% 10%, #000000 40%, #f59e0b 100%)`,
         }}
       />
-      <div className="relative z-10 flex h-full items-center justify-between rounded-xl border border-zinc-900 bg-black p-2">
+
+      {/* Content card */}
+      <div className="relative z-10 flex min-h-[calc(100vh-3rem)] flex-col overflow-hidden rounded-2xl border border-zinc-800 bg-black sm:min-h-[calc(100vh-4rem)] md:min-h-[calc(100vh-5rem)] md:flex-row">
+        {/* Video panel — hidden on mobile, shown md+ */}
         <AuthVideo />
-        <AuthCard />
+
+        {/* Auth card — full width on mobile, flex-1 on md+ */}
+        <div className="flex flex-1 items-center justify-center py-10 md:py-0">
+          <AuthCard />
+        </div>
       </div>
     </div>
   );
 };
+
 export default AuthPage;

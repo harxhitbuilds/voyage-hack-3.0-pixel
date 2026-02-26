@@ -2,7 +2,7 @@
 
 const AuthVideo = () => {
   return (
-    <div className="flex h-full w-[35vw] items-center justify-center overflow-hidden rounded-xl bg-red-500">
+    <div className="hidden shrink-0 self-stretch md:block md:w-[40%] lg:w-[45%]">
       <video
         src="/videos/auth-page-video.mp4"
         className="h-full w-full object-cover"
@@ -14,4 +14,5 @@ const AuthVideo = () => {
     </div>
   );
 };
+
 export default AuthVideo;
