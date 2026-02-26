@@ -38,7 +38,7 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://pixel-symbiosis-skill-hackathon.onrender.com","https://pixel-symbiosis-skill-hackathon.vercel.app"],
+    origin: ["http://localhost:3000", "https://pixel-symbiosis-skill-hackathon.onrender.com", "https://pixel-symbiosis-skill-hackathon.vercel.app"],
     credentials: true,
   })
 );
@@ -71,6 +71,10 @@ import { startTranscriptPolling } from "./controllers/vapi.controller.js";
 
 // Start background transcript polling
 startTranscriptPolling();
+
+app.get("/health", (req, res) => {
+  res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
 
 app.use("/api/auth", authRouter);
 app.use("/api/3dmodel", modelRouter);
