@@ -51,7 +51,7 @@ export default function Sidebar() {
       collapsible="icon"
       className="bg-background border-r border-white/5"
     >
-      <SidebarHeader className="flex items-center justify-between px-6 py-8 group-data-[state=collapsed]:justify-center">
+      <SidebarHeader className="flex items-center py-8 group-data-[state=collapsed]:justify-center">
         {open && <Logo />}
       </SidebarHeader>
 

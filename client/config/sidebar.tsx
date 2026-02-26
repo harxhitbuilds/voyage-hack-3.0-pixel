@@ -20,7 +20,7 @@ export const getSidebarConfig = (user: any) => {
           },
           {
             label: "Trips",
-            link: "/trips",
+            link: "/home/trips",
             icon: <Map className="h-4 w-4" />,
             requiresAuth: true,
           },
