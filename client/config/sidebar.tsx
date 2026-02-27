@@ -1,4 +1,4 @@
-import { Home, Map, Settings, User, CuboidIcon } from "lucide-react";
+import { CuboidIcon, Eye, Home, Map, Settings, User } from "lucide-react";
 
 export const getSidebarConfig = (user: any) => {
   return {
@@ -12,10 +12,10 @@ export const getSidebarConfig = (user: any) => {
             icon: <Home className="h-4 w-4" />,
             requiresAuth: false,
           },
-            {
+          {
             label: "Experience",
             link: "/home/experience",
-            icon: <CuboidIcon className="h-4 w-4" />,
+            icon: <Eye className="h-4 w-4" />,
             requiresAuth: false,
           },
           {
@@ -23,6 +23,12 @@ export const getSidebarConfig = (user: any) => {
             link: "/home/trips",
             icon: <Map className="h-4 w-4" />,
             requiresAuth: true,
+          },
+          {
+            label: "3D Studio",
+            link: "/home/ar-studio",
+            icon: <CuboidIcon className="h-4 w-4" />,
+            requiresAuth: false,
           },
         ],
       },
