@@ -94,10 +94,63 @@ app.get("/api/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
 });
 
-// Error handling middleware
+// Error handling middleware — handles both ApiError and unexpected errors
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Something went wrong!" });
+  // Log full error for debugging
+  logger.error(
+    JSON.stringify({
+      message: err.message,
+      stack: err.stack,
+      url: req.originalUrl,
+      method: req.method,
+      body: req.body,
+    })
+  );
+
+  // Known operational errors (ApiError)
+  if (err.statusCode && err.success === false) {
+    return res.status(err.statusCode).json({
+      success: false,
+      message: err.message,
+      errors: err.errors || [],
+    });
+  }
+
+  // Mongoose validation errors
+  if (err.name === "ValidationError") {
+    const errors = Object.values(err.errors).map((e) => e.message);
+    return res.status(400).json({
+      success: false,
+      message: "Validation failed",
+      errors,
+    });
+  }
+
+  // Mongoose duplicate key error
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue || {})[0] || "field";
+    return res.status(400).json({
+      success: false,
+      message: `${field} already exists`,
+      errors: [`Duplicate value for ${field}`],
+    });
+  }
+
+  // JWT / Firebase auth errors
+  if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired token",
+      errors: [err.message],
+    });
+  }
+
+  // Fallback — unexpected server error
+  return res.status(500).json({
+    success: false,
+    message: err.message || "Internal server error",
+    errors: [err.message],
+  });
 });
 
 // 404 handler

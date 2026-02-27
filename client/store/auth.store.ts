@@ -103,7 +103,13 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       toast.success("Onboarding successful!");
     } catch (error: any) {
       console.error("Onboarding failed:", error);
-      const message = error.response?.data?.message || "Onboarding failed";
+      const serverErrors = error.response?.data?.errors;
+      const message =
+        (Array.isArray(serverErrors) && serverErrors.length > 0
+          ? serverErrors.join(", ")
+          : null) ||
+        error.response?.data?.message ||
+        "Onboarding failed";
       toast.error(message);
       throw error;
     } finally {

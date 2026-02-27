@@ -45,16 +45,39 @@ export const onBoardUser = asyncHandler(async (req, res) => {
     JSON.stringify(req.body, null, 2)
   );
 
-  try {
-    const sanitizedData = sanitizeOnboardingData(req.body);
+  const sanitizedData = sanitizeOnboardingData(req.body);
 
-    validateOnboardingData(sanitizedData);
+  validateOnboardingData(sanitizedData);
 
-    const {
-      firstName,
-      lastName,
-      username,
-      hometown,
+  const {
+    firstName,
+    lastName,
+    username,
+    hometown,
+    travelStyle,
+    budgetRange,
+    groupSize,
+    tripDuration,
+    travelFrequency,
+    accommodationType,
+    transportationPreference,
+  } = sanitizedData;
+
+  const existingUser = await User.findOne({
+    username,
+    _id: { $ne: req.user._id },
+  });
+
+  if (existingUser) {
+    throw new ApiError(400, "Username is already taken", []);
+  }
+
+  const updateData = {
+    firstName,
+    lastName,
+    username,
+    hometown,
+    travelPreferences: {
       travelStyle,
       budgetRange,
       groupSize,
@@ -62,58 +85,28 @@ export const onBoardUser = asyncHandler(async (req, res) => {
       travelFrequency,
       accommodationType,
       transportationPreference,
-    } = sanitizedData;
+    },
+    onBoarded: true,
+  };
 
-    const existingUser = await User.findOne({
-      username,
-      _id: { $ne: req.user._id },
-    });
+  const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
+    new: true,
+    runValidators: true,
+  });
 
-    if (existingUser) {
-      throw new ApiError(400, "Username is already taken", []);
-    }
-
-    const updateData = {
-      firstName,
-      lastName,
-      username,
-      hometown,
-      travelPreferences: {
-        travelStyle,
-        budgetRange,
-        groupSize,
-        tripDuration,
-        travelFrequency,
-        accommodationType,
-        transportationPreference,
-      },
-      onBoarded: true,
-    };
-
-    const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
-      new: true,
-      runValidators: true,
-    });
-
-    if (!updatedUser) {
-      throw new ApiError(404, "User not found", []);
-    }
-
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          { user: updatedUser },
-          "Onboarding completed successfully"
-        )
-      );
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(500, "Failed to complete onboarding", [error.message]);
+  if (!updatedUser) {
+    throw new ApiError(404, "User not found", []);
   }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { user: updatedUser },
+        "Onboarding completed successfully"
+      )
+    );
 });
 
 export const checkAuth = asyncHandler(async (req, res) => {
@@ -126,30 +119,23 @@ export const checkAuth = asyncHandler(async (req, res) => {
 });
 
 export const getUserProfile = asyncHandler(async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select("-__v").lean();
+  const user = await User.findById(req.user._id).select("-__v").lean();
 
-    if (!user) {
-      throw new ApiError(404, "User not found", []);
-    }
-
-    // Attach derived fields for gamification
-    user.tripCount = Array.isArray(user.trips) ? user.trips.length : 0;
-    user.visitedMonumentCount = Array.isArray(user.visitedMonuments)
-      ? user.visitedMonuments.length
-      : 0;
-
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(200, { user }, "User profile retrieved successfully")
-      );
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(500, "Failed to retrieve user profile", [error.message]);
+  if (!user) {
+    throw new ApiError(404, "User not found", []);
   }
+
+  // Attach derived fields for gamification
+  user.tripCount = Array.isArray(user.trips) ? user.trips.length : 0;
+  user.visitedMonumentCount = Array.isArray(user.visitedMonuments)
+    ? user.visitedMonuments.length
+    : 0;
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, { user }, "User profile retrieved successfully")
+    );
 });
 
 export const updateUserProfile = asyncHandler(async (req, res) => {
@@ -188,73 +174,66 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Validation failed", errors);
   }
 
-  try {
-    // Check if username is already taken by another user (if username is being updated)
-    if (sanitizedData.username) {
-      const existingUser = await User.findOne({
-        username: sanitizedData.username,
-        _id: { $ne: req.user._id },
-      });
-
-      if (existingUser) {
-        throw new ApiError(400, "Username is already taken", []);
-      }
-    }
-
-    // Build update object with only provided fields
-    const updateData = {};
-
-    // Basic fields
-    if (sanitizedData.firstName) updateData.firstName = sanitizedData.firstName;
-    if (sanitizedData.lastName) updateData.lastName = sanitizedData.lastName;
-    if (sanitizedData.username) updateData.username = sanitizedData.username;
-    if (sanitizedData.hometown) updateData.hometown = sanitizedData.hometown;
-
-    // Travel preferences - only update if any preference is provided
-    const travelPrefs = {};
-    if (sanitizedData.travelStyle)
-      travelPrefs.travelStyle = sanitizedData.travelStyle;
-    if (sanitizedData.budgetRange)
-      travelPrefs.budgetRange = sanitizedData.budgetRange;
-    if (sanitizedData.groupSize)
-      travelPrefs.groupSize = sanitizedData.groupSize;
-    if (sanitizedData.tripDuration)
-      travelPrefs.tripDuration = sanitizedData.tripDuration;
-    if (sanitizedData.travelFrequency)
-      travelPrefs.travelFrequency = sanitizedData.travelFrequency;
-    if (sanitizedData.accommodationType)
-      travelPrefs.accommodationType = sanitizedData.accommodationType;
-    if (sanitizedData.transportationPreference)
-      travelPrefs.transportationPreference =
-        sanitizedData.transportationPreference;
-
-    if (Object.keys(travelPrefs).length > 0) {
-      updateData.travelPreferences = travelPrefs;
-    }
-
-    // Update user in database
-    const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
-      new: true,
-      runValidators: true,
+  // Check if username is already taken by another user (if username is being updated)
+  if (sanitizedData.username) {
+    const existingUser = await User.findOne({
+      username: sanitizedData.username,
+      _id: { $ne: req.user._id },
     });
 
-    if (!updatedUser) {
-      throw new ApiError(404, "User not found", []);
+    if (existingUser) {
+      throw new ApiError(400, "Username is already taken", []);
     }
-
-    return res
-      .status(200)
-      .json(
-        new ApiResponse(
-          200,
-          { user: updatedUser },
-          "Profile updated successfully"
-        )
-      );
-  } catch (error) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
-    throw new ApiError(500, "Failed to update profile", [error.message]);
   }
+
+  // Build update object with only provided fields
+  const updateData = {};
+
+  // Basic fields
+  if (sanitizedData.firstName) updateData.firstName = sanitizedData.firstName;
+  if (sanitizedData.lastName) updateData.lastName = sanitizedData.lastName;
+  if (sanitizedData.username) updateData.username = sanitizedData.username;
+  if (sanitizedData.hometown) updateData.hometown = sanitizedData.hometown;
+
+  // Travel preferences - only update if any preference is provided
+  const travelPrefs = {};
+  if (sanitizedData.travelStyle)
+    travelPrefs.travelStyle = sanitizedData.travelStyle;
+  if (sanitizedData.budgetRange)
+    travelPrefs.budgetRange = sanitizedData.budgetRange;
+  if (sanitizedData.groupSize)
+    travelPrefs.groupSize = sanitizedData.groupSize;
+  if (sanitizedData.tripDuration)
+    travelPrefs.tripDuration = sanitizedData.tripDuration;
+  if (sanitizedData.travelFrequency)
+    travelPrefs.travelFrequency = sanitizedData.travelFrequency;
+  if (sanitizedData.accommodationType)
+    travelPrefs.accommodationType = sanitizedData.accommodationType;
+  if (sanitizedData.transportationPreference)
+    travelPrefs.transportationPreference =
+      sanitizedData.transportationPreference;
+
+  if (Object.keys(travelPrefs).length > 0) {
+    updateData.travelPreferences = travelPrefs;
+  }
+
+  // Update user in database
+  const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
+    new: true,
+    runValidators: true,
+  });
+
+  if (!updatedUser) {
+    throw new ApiError(404, "User not found", []);
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { user: updatedUser },
+        "Profile updated successfully"
+      )
+    );
 });
