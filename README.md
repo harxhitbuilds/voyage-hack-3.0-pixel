@@ -36,6 +36,17 @@ Nimbus bridges traditional Indian heritage tourism with next-generation AI techn
 
 ---
 
+## 🎬 Demo Video
+
+<p align="center">
+  <video src="./client/public/marketing/promotional_video.mp4" controls width="100%" style="border-radius:12px;max-width:860px">
+    Your browser does not support the video tag.
+    <a href="./client/public/marketing/promotional_video.mp4">▶ Watch the Nimbus demo video</a>
+  </video>
+</p>
+
+---
+
 ## 🖥️ Screenshots
 
 | Dashboard                                             | Trips                                         |
