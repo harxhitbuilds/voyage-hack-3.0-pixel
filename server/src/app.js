@@ -68,6 +68,7 @@ import modelRouter from "./routes/model.route.js";
 import vapiRouter from "./routes/vapi.route.js";
 import recommendationRouter from "./routes/recommendation.route.js";
 import model3dRouter from "./routes/model3d.route.js";
+import chatRoomRouter from "./routes/chatroom.route.js";
 import { startTranscriptPolling } from "./controllers/vapi.controller.js";
 
 // Start background transcript polling
@@ -82,6 +83,7 @@ app.use("/api/3dmodel", modelRouter);
 app.use("/api/vapi", vapiRouter);
 app.use("/api/recommendations", recommendationRouter);
 app.use("/api/model3d", model3dRouter);
+app.use("/api/chatroom", chatRoomRouter);
 
 // Routes
 app.get("/", (req, res) => {

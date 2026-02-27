@@ -1,4 +1,12 @@
-import { CuboidIcon, Eye, Home, Map, Settings, User } from "lucide-react";
+import {
+  CuboidIcon,
+  Eye,
+  Home,
+  Map,
+  MessageCircle,
+  Settings,
+  User,
+} from "lucide-react";
 
 export const getSidebarConfig = (user: any) => {
   return {
@@ -29,6 +37,12 @@ export const getSidebarConfig = (user: any) => {
             link: "/home/ar-studio",
             icon: <CuboidIcon className="h-4 w-4" />,
             requiresAuth: false,
+          },
+          {
+            label: "Group Plan",
+            link: "/home/chat",
+            icon: <MessageCircle className="h-4 w-4" />,
+            requiresAuth: true,
           },
         ],
       },

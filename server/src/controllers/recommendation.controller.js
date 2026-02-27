@@ -12,7 +12,7 @@ import {
 } from "../fallback-response/index.js";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
 const fetchDestinationImage = async (searchQuery) => {
   try {
