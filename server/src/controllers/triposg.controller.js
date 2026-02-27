@@ -12,17 +12,7 @@ const DEMO_FALLBACKS = [
     "https://modelviewer.dev/shared-assets/models/NeilArmstrong.glb",
 ];
 
- * POST /api/triposg/generate
- * Body: multipart/form-data  { image: File }
- * Optional query: ?steps=8&guidance=0&simplify=true&faces=10000&texture=false
- *
- * Pipeline:
- *  1. /start_session  – warm up the space
- *  2. /run_segmentation – remove background
- *  3. /get_random_seed  – pick seed
- *  4. /image_to_3d      – generate GLB
- *  5. /run_texture      – apply texture (optional, slower)
- */
+
 export const generateModel = asyncHandler(async (req, res, next) => {
     if (!req.file) {
         return next(new ApiError(400, "Image file is required"));
