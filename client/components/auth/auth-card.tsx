@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 
+import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,16 @@ import { useAuthStore } from "@/store/auth.store";
 
 const AuthCard = () => {
   const { loginWithGoogle } = useAuthStore();
+  const [loading, setLoading] = useState(false);
 
   const handleGoogleAuth = async () => {
     try {
+      setLoading(true);
       await loginWithGoogle();
     } catch (error) {
       console.error("Google auth failed:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -35,10 +40,39 @@ const AuthCard = () => {
         <div className="space-y-4">
           <Button
             onClick={handleGoogleAuth}
-            className="w-full cursor-pointer rounded-xl bg-white py-5 font-medium text-black hover:bg-gray-100 sm:py-6"
+            disabled={loading}
+            className="w-full cursor-pointer rounded-xl bg-white py-5 font-medium text-black hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-70 sm:py-6"
           >
-            <FcGoogle className="mr-3 h-5 w-5" />
-            Continue with Google
+            {loading ? (
+              <>
+                <svg
+                  className="mr-3 h-5 w-5 animate-spin"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8z"
+                  />
+                </svg>
+                Signing in…
+              </>
+            ) : (
+              <>
+                <FcGoogle className="mr-3 h-5 w-5" />
+                Continue with Google
+              </>
+            )}
           </Button>
 
           <p className="mt-6 text-center text-xs text-zinc-500">
