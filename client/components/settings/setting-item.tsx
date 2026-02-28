@@ -1,10 +1,22 @@
+import { LucideIcon } from "lucide-react";
+
+import { ReactNode } from "react";
+
+interface SettingItemProps {
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  children?: ReactNode;
+  danger?: boolean;
+}
+
 const SettingItem = ({
   icon: Icon,
   title,
   description,
   children,
   danger = false,
-}) => (
+}: SettingItemProps) => (
   <div className="border-border hover:bg-accent/5 flex items-center justify-between border-b p-4 transition-colors last:border-b-0">
     <div className="flex items-center gap-3">
       <Icon
