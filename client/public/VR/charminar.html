@@ -3,6 +3,11 @@
   <head>
     <title>Charminar VR Experience</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <!-- Vapi integration -->
+    <script type="module">
+      import { initializeWakeWord } from "./index.js";
+      window.initializeWakeWord = initializeWakeWord;
+    </script>
 
     <script>
       const MONUMENT_POS = { x: 0, z: -50 };
@@ -37,8 +42,9 @@
       });
 
       setTimeout(() => {
-        document.querySelector("a-text").setAttribute("visible", false);
-      }, 5000);
+        const instEl = document.querySelector("#vr-instructions");
+        if (instEl) instEl.setAttribute("visible", false);
+      }, 7000);
 
       // 2. ONE-TAP START (Audio + Enter VR)
       AFRAME.registerComponent("start-experience", {
@@ -53,10 +59,18 @@
             var sound = document.querySelector("#ambient-sound");
             if (sound) sound.components.sound.playSound();
 
-            // B. Enter VR Mode Immediately
+            // B. Start Listening for Wake Word
+            if (window.initializeWakeWord) {
+              var startBtn = document.querySelector("#start-btn");
+              if (startBtn)
+                startBtn.innerText = "Listening for 'Hey Nimbus'...";
+              window.initializeWakeWord();
+            }
+
+            // C. Enter VR Mode Immediately
             scene.enterVR();
 
-            // C. Hide Overlay
+            // D. Hide Overlay
             overlay.style.display = "none";
           });
         },
@@ -198,7 +212,7 @@
         ></a-asset-item>
         <img id="grass-texture" src="./assets/grass1.jpg" />
         <img id="sky-texture" src="./assets/sky1.jpg" />
-        <audio id="wind-sound" src="./assets/wind.wav" preload="auto"></audio>
+        <!-- <audio id="wind-sound" src="./assets/wind.wav" preload="auto"></audio> -->
       </a-assets>
 
       <a-sky src="#sky-texture" rotation="0 -130 0"></a-sky>
@@ -260,14 +274,57 @@
             material="color: white; shader: flat; opacity: 0.8"
           ></a-entity>
           <a-text
-            value="Look DOWN to Walk"
+            id="vr-instructions"
+            value="Look DOWN to Walk\n\nSay 'Hello Nimbus'\nfor a virtual tour guide"
             position="0 -0.5 -1"
             align="center"
             width="2.5"
             color="white"
           ></a-text>
+
+          <!-- Floating VR Captions UI -->
+          <a-entity
+            id="caption-container"
+            position="0 -0.35 -1.2"
+            visible="false"
+          >
+            <!-- Background Panel -->
+            <a-entity
+              geometry="primitive: plane; width: 1.6; height: 0.35"
+              material="color: #000000; opacity: 0.6; transparent: true; shader: flat"
+              position="0 0 -0.01"
+            ></a-entity>
+            <!-- Text Content -->
+            <a-text
+              id="vr-captions"
+              value=""
+              align="center"
+              width="1.5"
+              color="#FFFFFF"
+              wrap-count="35"
+              baseline="center"
+            ></a-text>
+          </a-entity>
         </a-camera>
       </a-entity>
     </a-scene>
+
+    <script>
+      // Listen for AI transcripts from Vapi and update the floating captions
+      window.addEventListener("vapi-transcript", (e) => {
+        const captionEl = document.querySelector("#vr-captions");
+        const containerEl = document.querySelector("#caption-container");
+        if (captionEl && containerEl) {
+          captionEl.setAttribute("value", e.detail.text);
+          containerEl.setAttribute("visible", "true");
+          // Optional: clear the caption after 5 seconds of silence
+          clearTimeout(window.captionTimeout);
+          window.captionTimeout = setTimeout(() => {
+            captionEl.setAttribute("value", "");
+            containerEl.setAttribute("visible", "false");
+          }, 5000);
+        }
+      });
+    </script>
   </body>
 </html>
