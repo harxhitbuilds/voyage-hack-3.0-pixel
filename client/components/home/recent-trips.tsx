@@ -21,30 +21,30 @@ interface Trip {
 
 const typeAccent: Record<string, { dot: string; label: string }> = {
   solo: {
-    dot: "bg-blue-400",
-    label: "text-blue-400 border-blue-500/20 bg-blue-500/8",
+    dot: "bg-zinc-400",
+    label: "text-zinc-300 border-zinc-700 bg-zinc-800/50",
   },
   couple: {
-    dot: "bg-pink-400",
-    label: "text-pink-400 border-pink-500/20 bg-pink-500/8",
+    dot: "bg-zinc-300",
+    label: "text-zinc-300 border-zinc-700 bg-zinc-800/50",
   },
   family: {
-    dot: "bg-amber-400",
-    label: "text-amber-400 border-amber-500/20 bg-amber-500/8",
+    dot: "bg-zinc-200",
+    label: "text-zinc-300 border-zinc-700 bg-zinc-800/50",
   },
   group: {
-    dot: "bg-green-400",
-    label: "text-green-400 border-green-500/20 bg-green-500/8",
+    dot: "bg-white",
+    label: "text-zinc-300 border-zinc-700 bg-zinc-800/50",
   },
 };
 
 const RecentTripsSection = () => {
   return (
-    <div className="flex h-full flex-col bg-[#0d0d0d]">
+    <div className="flex h-full flex-col bg-zinc-950">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
+      <div className="flex items-center justify-between border-b border-zinc-800/60 px-5 py-4">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/8 bg-white/5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900">
             <Plane className="h-3.5 w-3.5 text-zinc-400" />
           </div>
           <h2 className="text-sm font-bold text-white">Recent Trips</h2>
@@ -69,14 +69,14 @@ const RecentTripsSection = () => {
             return (
               <div
                 key={trip.id}
-                className="group relative flex items-start gap-3 overflow-hidden rounded-xl border border-white/5 bg-white/2 px-3.5 py-3 transition-all hover:border-white/8 hover:bg-white/4"
+                className="group relative flex items-start gap-3 overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-900/30 px-3.5 py-3 transition-all hover:border-zinc-700 hover:bg-zinc-900/60"
               >
                 {/* Left accent bar */}
                 <div
                   className={`absolute top-0 bottom-0 left-0 w-0.5 rounded-l-xl ${accent.dot}`}
                 />
 
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-white/8 bg-white/5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900">
                   <MapPin className="h-3.5 w-3.5 text-zinc-500" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -111,7 +111,7 @@ const RecentTripsSection = () => {
           })
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-4 py-12 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/8 bg-white/4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900">
               <Plane className="h-5 w-5 text-zinc-600" />
             </div>
             <div>
@@ -124,7 +124,7 @@ const RecentTripsSection = () => {
             </div>
             <Link
               href="/home/trips"
-              className="rounded-xl border border-white/8 bg-white/4 px-4 py-2 text-xs font-semibold text-zinc-300 transition-all hover:border-white/12 hover:text-white"
+              className="rounded-lg border border-zinc-800 bg-transparent px-4 py-2 text-xs font-semibold text-zinc-300 transition-all hover:bg-zinc-800 hover:text-white"
             >
               Plan your first trip
             </Link>

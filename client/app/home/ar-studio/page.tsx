@@ -69,7 +69,6 @@ export default function ARStudioPage() {
         return;
       }
 
-      // Local preview
       const objectUrl = URL.createObjectURL(file);
       setPreviewSrc(objectUrl);
 
@@ -78,12 +77,11 @@ export default function ARStudioPage() {
       setStage("uploading");
       setStepIdx(0);
 
-      // Animate step labels while waiting
       let s = 0;
       const stepTimer = setInterval(() => {
         s = Math.min(s + 1, STEPS.length - 1);
         setStepIdx(s);
-      }, 15000); // ~15s per step, generation takes ~60-90s total
+      }, 15000);
 
       try {
         const form = new FormData();
@@ -91,7 +89,6 @@ export default function ARStudioPage() {
 
         setStage("processing");
 
-        // POST to our server — NimbusAI 2D→3D pipeline
         const resp = await apiClient.post(
           `/model3d/generate?steps=8&guidance=0&simplify=true&faces=10000&texture=${withTexture}`,
           form,
@@ -104,7 +101,6 @@ export default function ARStudioPage() {
         setResult(data);
         setStage("complete");
 
-        // Add to local history
         setHistory((prev) => [
           {
             name: file.name,
@@ -127,7 +123,6 @@ export default function ARStudioPage() {
     [withTexture],
   );
 
-  /* ── Drop zone handlers ── */
   const onDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
@@ -159,65 +154,47 @@ export default function ARStudioPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
+    <div className="mx-auto w-full space-y-8 px-8 py-10 pb-24 md:px-8">
       <Script
         type="module"
         src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.3.0/model-viewer.min.js"
         strategy="lazyOnload"
       />
 
-      {/* ── Top nav ── */}
-      <nav className="sticky top-0 z-10 border-b border-zinc-800 bg-zinc-950/90 px-6 py-4 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link
-              href="/home"
-              className="flex items-center gap-2 text-sm font-medium text-zinc-400 transition-colors hover:text-white"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Dashboard
-            </Link>
-            <div className="h-4 w-px bg-zinc-800" />
-            <span className="flex items-center gap-2 text-base font-bold tracking-tight">
-              <Box className="h-5 w-5 text-blue-400" />
+      {/* ── Page Header ── */}
+      <div className="mb-6">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="flex items-center gap-2 text-2xl font-bold tracking-tight text-white">
+              <Box className="h-5 w-5 text-zinc-400" />
               AR Studio
-              <span className="rounded-full border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-400">
-                Powered by NimbusAI
-              </span>
-            </span>
+            </h1>
+            <p className="mt-1 text-sm text-zinc-500">
+              Upload any photo — NimbusAI generates an interactive 3D model in
+              seconds.
+            </p>
           </div>
-
-          <div className="flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-400">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-2 self-start rounded-full border border-zinc-700/60 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-zinc-400" />
             AI Pipeline Online
           </div>
         </div>
-      </nav>
+      </div>
 
-      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-8 lg:grid-cols-12">
+      <div className="flex flex-col gap-6 xl:flex-row">
         {/* ── Left: Generator ── */}
-        <div className="flex flex-col gap-6 lg:col-span-8">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-white">
-              2D → 3D Conversion
-            </h1>
-            <p className="mt-1 text-sm text-zinc-500">
-              Upload any photo of a monument or destination — NimbusAI generates
-              an interactive 3D model in seconds.
-            </p>
-          </div>
-
+        <div className="flex min-w-0 flex-1 flex-col gap-4 sm:gap-6">
           {/* Options row */}
-          <div className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 px-5 py-3">
+          <div className="flex flex-wrap items-center gap-3 overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-950 px-5 py-3 sm:gap-4">
             <Wand2 className="h-4 w-4 shrink-0 text-zinc-500" />
-            <span className="text-sm text-zinc-400">
+            <span className="text-xs text-zinc-400 sm:text-sm">
               Generate with textures
             </span>
             <button
               onClick={() => setWithTexture((v) => !v)}
               className={`relative ml-auto h-6 w-11 rounded-full border transition-colors ${
                 withTexture
-                  ? "border-blue-500/50 bg-blue-500"
+                  ? "border-zinc-500 bg-zinc-600"
                   : "border-zinc-700 bg-zinc-800"
               }`}
             >
@@ -227,29 +204,29 @@ export default function ARStudioPage() {
                 }`}
               />
             </button>
-            <span className="text-xs text-zinc-600">
+            <span className="hidden text-xs text-zinc-600 sm:inline">
               {withTexture ? "Slower but photorealistic" : "Fast geometry only"}
             </span>
           </div>
 
           {/* Main stage card */}
-          <div className="min-h-125 overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
+          <div className="min-h-80 overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-950 sm:min-h-105 lg:min-h-125">
             {/* ── IDLE: Drop zone ── */}
             {stage === "idle" && (
               <label
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={onDrop}
-                className="flex h-full min-h-125 cursor-pointer flex-col items-center justify-center gap-4 p-8 transition-colors hover:bg-zinc-800/30"
+                className="flex h-full min-h-80 cursor-pointer flex-col items-center justify-center gap-4 p-6 transition-colors hover:bg-zinc-900/50 sm:min-h-105 sm:p-8 lg:min-h-125"
               >
-                <div className="flex h-20 w-20 items-center justify-center rounded-2xl border border-zinc-700 bg-zinc-800">
-                  <Upload className="h-8 w-8 text-zinc-400" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900 sm:h-20 sm:w-20">
+                  <Upload className="h-6 w-6 text-zinc-400 sm:h-8 sm:w-8" />
                 </div>
                 <div className="text-center">
-                  <p className="text-base font-semibold text-white">
+                  <p className="text-sm font-semibold text-white sm:text-base">
                     Drop your image here
                   </p>
-                  <p className="mt-1 text-sm text-zinc-500">
-                    or click to browse — JPG / PNG, up to 20 MB
+                  <p className="mt-1 text-xs text-zinc-500 sm:text-sm">
+                    or tap to browse — JPG / PNG, up to 20 MB
                   </p>
                 </div>
                 <div className="mt-2 flex flex-wrap justify-center gap-2">
@@ -257,7 +234,7 @@ export default function ARStudioPage() {
                     (tag) => (
                       <span
                         key={tag}
-                        className="rounded-full border border-zinc-700 bg-zinc-800 px-3 py-1 text-xs text-zinc-400"
+                        className="rounded-full border border-zinc-700/60 bg-zinc-800/60 px-2.5 py-1 text-[10px] text-zinc-400 sm:px-3 sm:text-xs"
                       >
                         {tag}
                       </span>
@@ -276,19 +253,19 @@ export default function ARStudioPage() {
 
             {/* ── UPLOADING / PROCESSING ── */}
             {(stage === "uploading" || stage === "processing") && (
-              <div className="flex h-full min-h-125 flex-col items-center justify-center gap-6 p-8">
+              <div className="flex h-full min-h-80 flex-col items-center justify-center gap-5 p-6 sm:min-h-105 sm:gap-6 sm:p-8 lg:min-h-125">
                 {previewSrc && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={previewSrc}
                     alt="Input"
-                    className="h-32 w-32 rounded-xl border border-zinc-700 object-cover"
+                    className="h-24 w-24 rounded-xl border border-zinc-800 object-cover sm:h-32 sm:w-32"
                   />
                 )}
 
                 <div className="flex items-center gap-3">
-                  <Loader2 className="h-6 w-6 animate-spin text-blue-400" />
-                  <p className="text-base font-semibold text-white">
+                  <Loader2 className="h-5 w-5 animate-spin text-zinc-400 sm:h-6 sm:w-6" />
+                  <p className="text-sm font-semibold text-white sm:text-base">
                     {stage === "uploading"
                       ? "Uploading image…"
                       : STEPS[stepIdx]}
@@ -302,31 +279,31 @@ export default function ARStudioPage() {
                       <div
                         className={`h-2 w-2 shrink-0 rounded-full transition-colors ${
                           i < stepIdx
-                            ? "bg-emerald-400"
+                            ? "bg-zinc-300"
                             : i === stepIdx
-                              ? "animate-pulse bg-blue-400"
+                              ? "animate-pulse bg-zinc-400"
                               : "bg-zinc-700"
                         }`}
                       />
                       <span
                         className={`text-xs ${
                           i < stepIdx
-                            ? "text-emerald-400"
+                            ? "text-zinc-300"
                             : i === stepIdx
-                              ? "text-blue-300"
+                              ? "text-zinc-400"
                               : "text-zinc-600"
                         }`}
                       >
                         {step}
                       </span>
                       {i < stepIdx && (
-                        <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-emerald-400" />
+                        <CheckCircle2 className="ml-auto h-3.5 w-3.5 text-zinc-400" />
                       )}
                     </div>
                   ))}
                 </div>
 
-                <p className="text-xs text-zinc-600">
+                <p className="text-[10px] text-zinc-600 sm:text-xs">
                   This usually takes 20–60 seconds depending on complexity
                 </p>
               </div>
@@ -334,19 +311,21 @@ export default function ARStudioPage() {
 
             {/* ── ERROR ── */}
             {stage === "error" && (
-              <div className="flex h-full min-h-125 flex-col items-center justify-center gap-4 p-8 text-center">
-                <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10">
-                  <AlertCircle className="h-8 w-8 text-red-400" />
+              <div className="flex h-full min-h-80 flex-col items-center justify-center gap-4 p-6 text-center sm:min-h-105 sm:p-8 lg:min-h-125">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-red-500/20 bg-red-500/5 sm:h-16 sm:w-16">
+                  <AlertCircle className="h-7 w-7 text-red-400 sm:h-8 sm:w-8" />
                 </div>
                 <div>
-                  <p className="text-base font-semibold text-white">
+                  <p className="text-sm font-semibold text-white sm:text-base">
                     Generation failed
                   </p>
-                  <p className="mt-1 max-w-sm text-sm text-zinc-500">{error}</p>
+                  <p className="mt-1 max-w-sm text-xs text-zinc-500 sm:text-sm">
+                    {error}
+                  </p>
                 </div>
                 <button
                   onClick={reset}
-                  className="rounded-xl bg-zinc-800 px-6 py-2.5 text-sm font-semibold text-white hover:bg-zinc-700"
+                  className="rounded-lg border border-zinc-800 bg-transparent px-5 py-2 text-sm font-semibold text-zinc-300 hover:bg-zinc-800 hover:text-white"
                 >
                   Try Again
                 </button>
@@ -355,28 +334,28 @@ export default function ARStudioPage() {
 
             {/* ── COMPLETE ── */}
             {stage === "complete" && result && (
-              <div className="flex h-full min-h-125 flex-col gap-4 p-6">
+              <div className="flex h-full min-h-80 flex-col gap-4 p-4 sm:min-h-105 sm:p-6 lg:min-h-125">
                 {/* Preview / quota warning */}
                 {result.isPreview && (
-                  <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                  <div className="flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2.5 sm:px-4 sm:py-3">
                     <Info className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
                     <div>
-                      <p className="text-sm font-semibold text-amber-400">
+                      <p className="text-xs font-semibold text-amber-400 sm:text-sm">
                         Preview Model
                       </p>
-                      <p className="mt-0.5 text-xs text-amber-400/70">
+                      <p className="mt-0.5 text-[10px] text-amber-400/70 sm:text-xs">
                         {result.previewMessage}
                       </p>
                     </div>
                   </div>
                 )}
 
-                {/* Success banner */}
-                <div className="flex items-center justify-between">
+                {/* Success banner + actions */}
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <span
-                    className={`flex items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium ${result.isPreview ? "border-amber-500/30 bg-amber-500/10 text-amber-400" : "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"}`}
+                    className={`flex items-center gap-2 self-start rounded-lg border px-3 py-1.5 text-xs font-medium sm:px-4 sm:py-2 sm:text-sm ${result.isPreview ? "border-amber-500/20 bg-amber-500/5 text-amber-400" : "border-zinc-700/60 bg-zinc-800/60 text-zinc-300"}`}
                   >
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     {result.isPreview
                       ? "Preview Model"
                       : `3D Model Ready — Seed ${result.seed}`}
@@ -387,23 +366,23 @@ export default function ARStudioPage() {
                       target="_blank"
                       rel="noreferrer"
                       download="model.glb"
-                      className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 hover:border-zinc-500 hover:text-white"
+                      className="flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-transparent px-3 py-1.5 text-xs font-medium text-zinc-300 hover:bg-zinc-800 hover:text-white sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
                     >
-                      <Download className="h-4 w-4" />
-                      Download GLB
+                      <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      <span className="xs:inline hidden">Download</span> GLB
                     </a>
                     <button
                       onClick={reset}
-                      className="flex items-center gap-2 rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-500"
+                      className="flex items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-black hover:bg-zinc-200 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
                     >
-                      <Sparkles className="h-4 w-4" />
+                      <Sparkles className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       New Model
                     </button>
                   </div>
                 </div>
 
                 {/* 3D viewer */}
-                <div className="relative flex-1 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-950">
+                <div className="relative min-h-60 flex-1 overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-950 sm:min-h-80">
                   {/* @ts-expect-error – model-viewer is a custom element */}
                   <model-viewer
                     src={result.glbUrl}
@@ -412,19 +391,23 @@ export default function ARStudioPage() {
                     camera-controls
                     ar
                     shadow-intensity="1"
-                    style={{ width: "100%", height: "100%", minHeight: 380 }}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      minHeight: "inherit",
+                    }}
                   />
 
                   {/* Overlay pill */}
-                  <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-full border border-zinc-700 bg-zinc-900/90 px-5 py-2.5 text-sm font-medium text-zinc-300 backdrop-blur-sm">
-                    <Box className="h-4 w-4 text-blue-400" />
+                  <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2 rounded-full border border-zinc-700/60 bg-zinc-900/90 px-3 py-1.5 text-[10px] font-medium text-zinc-300 backdrop-blur-sm sm:gap-3 sm:px-5 sm:py-2.5 sm:text-sm">
+                    <Box className="h-3.5 w-3.5 text-zinc-400 sm:h-4 sm:w-4" />
                     Drag to rotate · Scroll to zoom
                   </div>
                 </div>
 
                 {/* Input image + segmented preview row */}
                 {(result.segmentedImageUrl || previewSrc) && (
-                  <div className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+                  <div className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-800/60 bg-zinc-950 p-3 sm:gap-4 sm:p-4">
                     <div className="flex gap-3">
                       {previewSrc && (
                         <div className="text-center">
@@ -432,9 +415,11 @@ export default function ARStudioPage() {
                           <img
                             src={previewSrc}
                             alt="Original"
-                            className="h-16 w-16 rounded-lg border border-zinc-700 object-cover"
+                            className="h-12 w-12 rounded-lg border border-zinc-800 object-cover sm:h-16 sm:w-16"
                           />
-                          <p className="mt-1 text-xs text-zinc-600">Input</p>
+                          <p className="mt-1 text-[10px] text-zinc-600 sm:text-xs">
+                            Input
+                          </p>
                         </div>
                       )}
                       {result.segmentedImageUrl && (
@@ -443,15 +428,15 @@ export default function ARStudioPage() {
                           <img
                             src={result.segmentedImageUrl}
                             alt="Segmented"
-                            className="h-16 w-16 rounded-lg border border-zinc-700 object-cover"
+                            className="h-12 w-12 rounded-lg border border-zinc-800 object-cover sm:h-16 sm:w-16"
                           />
-                          <p className="mt-1 text-xs text-zinc-600">
+                          <p className="mt-1 text-[10px] text-zinc-600 sm:text-xs">
                             Segmented
                           </p>
                         </div>
                       )}
                     </div>
-                    <div className="ml-2 flex-1 text-xs text-zinc-500">
+                    <div className="flex-1 text-[10px] text-zinc-500 sm:text-xs">
                       {result.texturedGlbUrl
                         ? "✅ Textured GLB generated (PBR materials)"
                         : "✅ Geometry GLB generated"}
@@ -466,59 +451,61 @@ export default function ARStudioPage() {
         </div>
 
         {/* ── Right: History sidebar ── */}
-        <div className="flex flex-col gap-6 lg:col-span-4">
-          <h2 className="text-lg font-semibold tracking-tight text-white">
+        <div className="flex w-full flex-col gap-4 sm:gap-6 xl:w-80 xl:shrink-0">
+          <h2 className="text-sm font-semibold text-white">
             Recent Generations
           </h2>
 
           <div className="flex flex-col gap-3">
             {history.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-zinc-800 bg-zinc-900/30 py-14 text-center">
-                <ImageIcon className="h-8 w-8 text-zinc-700" />
-                <p className="text-sm text-zinc-600">
+              <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-zinc-800 bg-zinc-950 py-10 text-center sm:py-14">
+                <ImageIcon className="h-7 w-7 text-zinc-600 sm:h-8 sm:w-8" />
+                <p className="text-xs text-zinc-500 sm:text-sm">
                   Your generated models will appear here
                 </p>
               </div>
             ) : (
-              history.map((item, i) => (
-                <a
-                  key={i}
-                  href={item.glbUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4 transition-colors hover:border-zinc-600"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={item.previewUrl}
-                    alt={item.name}
-                    className="h-12 w-12 shrink-0 rounded-lg border border-zinc-700 object-cover"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-white">
-                      {item.name}
-                    </p>
-                    <div className="mt-1 flex items-center justify-between">
-                      <span className="flex items-center gap-1 text-xs text-zinc-500">
-                        <Clock className="h-3 w-3" />
-                        {timeAgo(item.time)}
-                      </span>
-                      <span className="rounded-sm border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-xs font-bold tracking-wider text-emerald-400 uppercase">
-                        Ready
-                      </span>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-1">
+                {history.map((item, i) => (
+                  <a
+                    key={i}
+                    href={item.glbUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-3 rounded-xl border border-zinc-800/60 bg-zinc-950 p-3 transition-colors hover:border-zinc-700 sm:gap-4 sm:p-4"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.previewUrl}
+                      alt={item.name}
+                      className="h-10 w-10 shrink-0 rounded-lg border border-zinc-800 object-cover sm:h-12 sm:w-12"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-semibold text-white sm:text-sm">
+                        {item.name}
+                      </p>
+                      <div className="mt-1 flex items-center justify-between">
+                        <span className="flex items-center gap-1 text-[10px] text-zinc-500 sm:text-xs">
+                          <Clock className="h-3 w-3" />
+                          {timeAgo(item.time)}
+                        </span>
+                        <span className="rounded-full border border-zinc-700/60 bg-zinc-800/60 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300 sm:px-2 sm:text-xs">
+                          Ready
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </a>
-              ))
+                  </a>
+                ))}
+              </div>
             )}
           </div>
 
           {/* Stats card */}
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6">
-            <p className="mb-4 text-xs font-semibold tracking-widest text-zinc-500 uppercase">
+          <div className="overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-950 p-4 sm:p-6">
+            <p className="mb-3 text-[10px] font-semibold tracking-widest text-zinc-500 uppercase sm:mb-4 sm:text-xs">
               Pipeline Stats
             </p>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               {history.length > 0 &&
                 [
                   { label: "Models Generated", value: history.length },
@@ -527,14 +514,18 @@ export default function ARStudioPage() {
                   { label: "Format", value: ".GLB / AR" },
                 ].map(({ label, value }) => (
                   <div key={label}>
-                    <p className="text-xl font-black text-white">{value}</p>
-                    <p className="mt-0.5 text-xs text-zinc-500">{label}</p>
+                    <p className="text-lg font-bold text-white sm:text-xl">
+                      {value}
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-zinc-500 sm:text-xs">
+                      {label}
+                    </p>
                   </div>
                 ))}
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

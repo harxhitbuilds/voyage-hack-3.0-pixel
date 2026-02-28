@@ -138,7 +138,7 @@ const DayCard = ({ day, index, isLast }: DayCardProps) => {
             {/* Cost + Tips row */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {day.estimatedCost && (
-                <div className="flex items-start gap-2 rounded-lg border border-white/5 bg-white/5 px-4 py-3">
+                <div className="flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
                   <DollarSign className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
                   <div>
                     <p className="mb-0.5 text-xs font-medium tracking-wider text-zinc-500 uppercase">
@@ -151,7 +151,7 @@ const DayCard = ({ day, index, isLast }: DayCardProps) => {
                 </div>
               )}
               {day.tips && (
-                <div className="flex items-start gap-2 rounded-lg border border-white/5 bg-white/5 px-4 py-3">
+                <div className="flex items-start gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-4 py-3">
                   <Lightbulb className="mt-0.5 h-4 w-4 shrink-0 text-amber-400" />
                   <div>
                     <p className="mb-0.5 text-xs font-medium tracking-wider text-zinc-500 uppercase">
@@ -193,7 +193,7 @@ const TripItineraryTab = ({ trip }: TripItineraryTabProps) => {
   return (
     <div className="space-y-6">
       {/* Summary banner */}
-      <div className="flex flex-col gap-4 rounded-xl border border-zinc-700 bg-linear-to-br from-blue-500/10 via-zinc-900 to-zinc-900 p-5 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 sm:flex-row sm:items-center">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-blue-500/30 bg-blue-500/10">
           <MapPin className="h-6 w-6 text-blue-400" />
         </div>

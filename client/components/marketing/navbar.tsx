@@ -68,15 +68,15 @@ export default function NavBar() {
   return (
     <div
       ref={navContainerRef}
-      className="fixed inset-x-0 top-4 z-50 h-16 border-none transition-all duration-1000 sm:inset-x-6"
+      className="fixed inset-x-0 top-2 z-50 h-16 border-none transition-all duration-1000 sm:inset-x-6 sm:top-4"
     >
       <header className="absolute top-1/2 w-full -translate-y-1/2">
-        <nav className="flex size-full items-center justify-between p-4">
-          <div className="flex items-center gap-7">
+        <nav className="flex size-full items-center justify-between px-3 py-2 sm:p-4">
+          <div className="flex items-center gap-4 sm:gap-7">
             <img
               src="/img/nimbus-logo.svg"
               alt="logo"
-              className="w-14 invert"
+              className="w-10 invert sm:w-14"
             />
             <a href="/auth">
               <Button
@@ -103,7 +103,8 @@ export default function NavBar() {
 
             <button
               onClick={toggleAudioIndicator}
-              className="ml-10 flex items-center space-x-0.5"
+              className="ml-4 flex items-center space-x-0.5 p-2 sm:ml-10"
+              aria-label="Toggle audio"
             >
               <audio
                 ref={audioElementRef}

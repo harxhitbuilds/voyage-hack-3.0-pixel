@@ -169,7 +169,7 @@ const TripOverviewTab = ({ trip }: TripOverviewTabProps) => (
     <div className="space-y-6">
       {/* AI summary */}
       {trip.aiInsights?.tripSummary && (
-        <div className="rounded-xl border border-zinc-700 bg-linear-to-br from-blue-500/5 via-zinc-900/60 to-zinc-900/60 p-6">
+        <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-6">
           <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold text-white">
             <Brain className="h-4 w-4 text-blue-400" />
             AI Summary

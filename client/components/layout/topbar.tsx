@@ -34,7 +34,7 @@ export default function Topbar() {
     : "N";
 
   return (
-    <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-white/5 bg-[#080808]/80 px-4 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 flex h-14 items-center justify-between border-b border-white/5 bg-white px-4 backdrop-blur-xl dark:bg-black">
       <div className="flex items-center gap-3">
         <SidebarTrigger className="text-zinc-500 transition-colors hover:bg-white/5 hover:text-white" />
         <Separator orientation="vertical" className="h-4 bg-white/8" />
@@ -46,7 +46,6 @@ export default function Topbar() {
       </div>
 
       <div className="flex items-center gap-3">
-        <ModeToggle />
         {/* User avatar */}
         <div className="flex h-7 w-7 items-center justify-center rounded-full border border-white/10 bg-white/8 text-[11px] font-black text-zinc-300 select-none">
           {initials}

@@ -27,27 +27,27 @@ const statusConfig: Record<
 > = {
   queued: {
     label: "Queued",
-    color: "text-amber-400 border-amber-500/20 bg-amber-500/8",
-    dot: "bg-amber-400",
+    color: "text-zinc-400 border-zinc-700/60 bg-zinc-800/60",
+    dot: "bg-zinc-400",
   },
   ringing: {
     label: "Ringing",
-    color: "text-blue-400 border-blue-500/20 bg-blue-500/8",
-    dot: "bg-blue-400 animate-ping",
+    color: "text-zinc-300 border-zinc-700/60 bg-zinc-800/60",
+    dot: "bg-zinc-300 animate-ping",
   },
   "in-progress": {
     label: "In Progress",
-    color: "text-emerald-400 border-emerald-500/20 bg-emerald-500/8",
-    dot: "bg-emerald-400 animate-pulse",
+    color: "text-zinc-200 border-zinc-600 bg-zinc-800",
+    dot: "bg-zinc-200 animate-pulse",
   },
   ended: {
     label: "Completed",
-    color: "text-zinc-400 border-white/8 bg-white/4",
+    color: "text-zinc-400 border-zinc-700/60 bg-zinc-800/60",
     dot: "bg-zinc-500",
   },
   failed: {
     label: "Failed",
-    color: "text-red-400 border-red-500/20 bg-red-500/8",
+    color: "text-red-400 border-red-500/20 bg-red-500/5",
     dot: "bg-red-400",
   },
 };
@@ -97,27 +97,26 @@ const TripTableRow = ({ trip }: TripTableRowProps) => {
   };
 
   return (
-    <div className="group grid grid-cols-1 items-center gap-3 px-6 py-4 transition-colors hover:bg-white/2 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1.2fr_auto] md:gap-4">
+    <div className="group grid grid-cols-1 items-center gap-3 px-6 py-4 transition-colors hover:bg-zinc-900/40 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1.2fr_auto] md:gap-4">
       {/* Destination */}
       <div className="flex min-w-0 items-center gap-3">
-        {/* Avatar */}
-        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-white/8 bg-white/5">
-          <span className="text-xs font-black text-zinc-300">{initials}</span>
+        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900">
+          <span className="text-xs font-bold text-zinc-300">{initials}</span>
           {status === "in-progress" && (
-            <span className="absolute right-0 bottom-0 h-2.5 w-2.5 translate-x-0.5 translate-y-0.5 rounded-full border-2 border-[#0d0d0d] bg-emerald-400" />
+            <span className="absolute right-0 bottom-0 h-2.5 w-2.5 translate-x-0.5 translate-y-0.5 rounded-full border-2 border-zinc-950 bg-zinc-300" />
           )}
         </div>
         <div className="min-w-0">
-          <p className="truncate text-sm font-semibold text-white">
+          <p className="truncate text-sm font-medium text-white">
             {destination}
           </p>
           {trip.tripDetails?.startDate ? (
-            <p className="mt-0.5 flex items-center gap-1 text-[11px] text-zinc-600">
+            <p className="mt-0.5 flex items-center gap-1 text-[11px] text-zinc-500">
               <Calendar className="h-2.5 w-2.5" />
               {format(new Date(trip.tripDetails.startDate), "MMM dd, yyyy")}
             </p>
           ) : (
-            <p className="mt-0.5 flex items-center gap-1 text-[11px] text-zinc-600">
+            <p className="mt-0.5 flex items-center gap-1 text-[11px] text-zinc-500">
               <MapPin className="h-2.5 w-2.5" />
               AI Trip
             </p>
@@ -128,7 +127,7 @@ const TripTableRow = ({ trip }: TripTableRowProps) => {
       {/* Status */}
       <div>
         <span
-          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${config.color}`}
+          className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-medium ${config.color}`}
         >
           <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
           {config.label}
@@ -137,24 +136,24 @@ const TripTableRow = ({ trip }: TripTableRowProps) => {
 
       {/* Duration */}
       <div className="flex items-center gap-1.5 text-sm text-zinc-400">
-        <Clock className="h-3.5 w-3.5 shrink-0 text-zinc-700" />
+        <Clock className="h-3.5 w-3.5 shrink-0 text-zinc-600" />
         {formatDuration(trip.callDuration)}
       </div>
 
       {/* Travelers */}
       <div className="flex items-center gap-1.5 text-sm text-zinc-400">
-        <Users className="h-3.5 w-3.5 shrink-0 text-zinc-700" />
+        <Users className="h-3.5 w-3.5 shrink-0 text-zinc-600" />
         {trip.tripDetails?.travelers || "—"}
       </div>
 
       {/* Budget */}
       <div className="flex items-center gap-1.5 text-sm text-zinc-400">
-        <DollarSign className="h-3.5 w-3.5 shrink-0 text-zinc-700" />
+        <DollarSign className="h-3.5 w-3.5 shrink-0 text-zinc-600" />
         {trip.tripDetails?.budget || "—"}
       </div>
 
       {/* Created */}
-      <div className="text-[11px] text-zinc-600">
+      <div className="text-[11px] text-zinc-500">
         {formatDate(trip.createdAt)}
       </div>
 
@@ -162,14 +161,14 @@ const TripTableRow = ({ trip }: TripTableRowProps) => {
       <div className="flex items-center gap-2">
         <Link
           href={`/home/trip/${trip._id}`}
-          className="group/btn relative inline-flex items-center gap-1.5 overflow-hidden rounded-lg border border-white/8 bg-white/4 px-3 py-1.5 text-xs font-semibold text-zinc-300 transition-all hover:border-white/15 hover:bg-white/8 hover:text-white"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-zinc-800 bg-transparent px-3 py-1.5 text-xs font-medium text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
         >
           <Eye className="h-3 w-3" />
           View
         </Link>
         <button
           onClick={handleShare}
-          className="flex h-7 w-7 items-center justify-center rounded-lg border border-white/6 text-zinc-600 transition-all hover:border-white/12 hover:text-zinc-300"
+          className="flex h-7 w-7 items-center justify-center rounded-lg border border-zinc-800 text-zinc-600 transition-colors hover:bg-zinc-800 hover:text-zinc-300"
           title="Share trip"
         >
           <Share2 className="h-3 w-3" />

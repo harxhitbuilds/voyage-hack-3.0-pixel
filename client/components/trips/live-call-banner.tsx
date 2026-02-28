@@ -27,32 +27,32 @@ const statusMeta: Record<
   queued: {
     icon: Phone,
     label: "Call queued…",
-    color: "text-amber-400",
-    bg: "border-amber-500/20 bg-amber-500/5",
+    color: "text-zinc-400",
+    bg: "border-zinc-800/60 bg-zinc-950",
   },
   ringing: {
     icon: PhoneCall,
     label: "Phone is ringing…",
-    color: "text-blue-400",
-    bg: "border-blue-500/20 bg-blue-500/5",
+    color: "text-zinc-300",
+    bg: "border-zinc-800/60 bg-zinc-950",
   },
   "in-progress": {
     icon: PhoneCall,
     label: "Call in progress — AI is listening",
-    color: "text-emerald-400",
-    bg: "border-emerald-500/20 bg-emerald-500/5",
+    color: "text-zinc-200",
+    bg: "border-zinc-700 bg-zinc-950",
   },
   ended: {
     icon: Brain,
     label: "Processing your trip with AI…",
-    color: "text-purple-400",
-    bg: "border-purple-500/20 bg-purple-500/5",
+    color: "text-zinc-300",
+    bg: "border-zinc-800/60 bg-zinc-950",
   },
   complete: {
     icon: CheckCircle2,
     label: "✨ Itinerary generated! Refreshing…",
-    color: "text-emerald-400",
-    bg: "border-emerald-500/20 bg-emerald-500/5",
+    color: "text-zinc-200",
+    bg: "border-zinc-700 bg-zinc-950",
   },
   failed: {
     icon: PhoneOff,
@@ -95,7 +95,7 @@ export default function LiveCallBanner({
     >
       {/* Status row */}
       <div className="flex items-center gap-3">
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900">
           {isStreaming && key !== "complete" ? (
             <Loader2 className={`h-4 w-4 animate-spin ${meta.color}`} />
           ) : (
@@ -107,7 +107,7 @@ export default function LiveCallBanner({
           <p className="text-xs text-zinc-500">Call ID: {callId}</p>
         </div>
         {key === "complete" && (
-          <Sparkles className="ml-auto h-4 w-4 animate-pulse text-emerald-400" />
+          <Sparkles className="ml-auto h-4 w-4 animate-pulse text-zinc-300" />
         )}
       </div>
 
@@ -118,8 +118,8 @@ export default function LiveCallBanner({
             <div
               className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-bold transition-all ${
                 step.done
-                  ? "border-emerald-500/40 bg-emerald-500/20 text-emerald-400"
-                  : "border-zinc-700 bg-zinc-800 text-zinc-600"
+                  ? "border-zinc-600 bg-zinc-800 text-zinc-300"
+                  : "border-zinc-800 bg-zinc-900 text-zinc-600"
               }`}
             >
               {step.done ? "✓" : i + 1}
@@ -131,7 +131,7 @@ export default function LiveCallBanner({
             </span>
             {i < steps.length - 1 && (
               <div
-                className={`h-px w-6 ${step.done ? "bg-emerald-500/40" : "bg-zinc-800"}`}
+                className={`h-px w-6 ${step.done ? "bg-zinc-600" : "bg-zinc-800"}`}
               />
             )}
           </div>

@@ -16,7 +16,7 @@ export default function HomeLayout({
             <Sidebar />
             <SidebarInset className="flex flex-1 flex-col">
               <Topbar />
-              <main className="flex-1 md:p-4">{children}</main>
+              <main className="flex-1  ">{children}</main>
             </SidebarInset>
           </div>
         </div>

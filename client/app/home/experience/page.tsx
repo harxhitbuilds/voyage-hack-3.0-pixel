@@ -123,14 +123,9 @@ export default function MonumentsPage() {
   /* ── Loading ── */
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#080808]">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative flex h-16 w-16 items-center justify-center">
-            <div className="absolute inset-0 rounded-2xl bg-blue-500/10 blur-xl" />
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-white/8 bg-[#0d0d0d]">
-              <Spinner className="text-blue-400" />
-            </div>
-          </div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Spinner className="text-zinc-500" />
           <p className="text-xs font-semibold tracking-widest text-zinc-600 uppercase">
             Loading Heritage Library…
           </p>
@@ -140,71 +135,44 @@ export default function MonumentsPage() {
   }
 
   return (
-    <div className="min-h-screen w-full space-y-8 py-8 pb-24">
-      {/* ── Page Hero ── */}
-      <div className="relative overflow-hidden rounded-3xl border border-white/6 bg-[#0a0a0a]">
-        <div className="pointer-events-none absolute -top-24 -left-24 h-72 w-72 rounded-full bg-violet-600/15 blur-[100px]" />
-        <div className="pointer-events-none absolute -right-16 -bottom-16 h-56 w-56 rounded-full bg-blue-600/10 blur-[80px]" />
-        <div className="pointer-events-none absolute top-0 right-0 left-0 h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
+    <div className="mx-auto w-full space-y-8 px-8 py-10 pb-24 md:px-8">
+      {/* ── Page Header ── */}
+      <div className="mb-2">
+        <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-zinc-800/60 bg-zinc-900/50 px-3 py-1.5">
+          <Zap className="h-3 w-3 text-zinc-400" />
+          <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
+            Heritage Explorer
+          </span>
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-white">
+          Monuments Library
+        </h1>
+        <p className="mt-1 max-w-xl text-sm text-zinc-500">
+          Explore India's architectural legacy through immersive 3D models,
+          augmented reality overlays, and cinematic VR walkthroughs.
+        </p>
 
-        <div className="relative px-8 py-10 md:px-12">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3.5 py-1.5">
-            <Zap className="h-3 w-3 text-amber-400" />
-            <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">
-              Heritage Explorer
+        {/* Stats pills */}
+        <div className="mt-4 flex flex-wrap gap-2">
+          {[
+            { icon: Landmark, label: `${models.length} Monuments` },
+            { icon: Box, label: `${arCount} 3D Models` },
+            { icon: Headset, label: `${vrCount} VR Ready` },
+            { icon: Search, label: `${filteredModels.length} Shown` },
+          ].map(({ icon: Icon, label }) => (
+            <span
+              key={label}
+              className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700/60 bg-zinc-800/60 px-3 py-1 text-xs font-medium text-zinc-300"
+            >
+              <Icon className="h-3 w-3 text-zinc-400" />
+              {label}
             </span>
-          </div>
-          <h1 className="text-4xl font-black tracking-tight text-white md:text-5xl">
-            Monuments{" "}
-            <span className="bg-linear-to-r from-violet-400 to-blue-400 bg-clip-text text-transparent">
-              Library
-            </span>
-          </h1>
-          <p className="mt-3 max-w-xl text-sm leading-relaxed text-zinc-500">
-            Explore India's architectural legacy through immersive 3D models,
-            augmented reality overlays, and cinematic VR walkthroughs.
-          </p>
-
-          {/* Stats pills */}
-          <div className="mt-6 flex flex-wrap gap-2">
-            {[
-              {
-                icon: Landmark,
-                label: `${models.length} Monuments`,
-                color: "border-zinc-700 text-zinc-300",
-              },
-              {
-                icon: Box,
-                label: `${arCount} 3D Models`,
-                color: "border-blue-500/25 text-blue-400 bg-blue-500/8",
-              },
-              {
-                icon: Headset,
-                label: `${vrCount} VR Ready`,
-                color: "border-purple-500/25 text-purple-400 bg-purple-500/8",
-              },
-              {
-                icon: Search,
-                label: `${filteredModels.length} Shown`,
-                color:
-                  "border-emerald-500/25 text-emerald-400 bg-emerald-500/8",
-              },
-            ].map(({ icon: Icon, label, color }) => (
-              <span
-                key={label}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold backdrop-blur-sm ${color}`}
-              >
-                <Icon className="h-3 w-3" />
-                {label}
-              </span>
-            ))}
-          </div>
+          ))}
         </div>
       </div>
 
       {/* ── Filters toggle ── */}
-      <div className="rounded-2xl border border-white/6 bg-[#0d0d0d]">
-        {/* Header bar */}
+      <div className="overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-950">
         <button
           onClick={() => setShowFilters((v) => !v)}
           className="flex w-full items-center justify-between px-5 py-3.5"
@@ -213,7 +181,7 @@ export default function MonumentsPage() {
             <SlidersHorizontal className="h-4 w-4 text-zinc-500" />
             <span className="text-sm font-semibold text-zinc-300">Filters</span>
             {hasActiveFilters && (
-              <span className="rounded-full border border-blue-500/25 bg-blue-500/10 px-2 py-0.5 text-[10px] font-bold text-blue-400">
+              <span className="rounded-full border border-zinc-600 bg-zinc-800 px-2 py-0.5 text-[10px] font-bold text-zinc-300">
                 Active
               </span>
             )}
@@ -224,7 +192,7 @@ export default function MonumentsPage() {
         </button>
 
         {showFilters && (
-          <div className="border-t border-white/5 px-5 pt-4 pb-5">
+          <div className="border-t border-zinc-800/60 px-5 pt-4 pb-5">
             <FiltersBar
               searchTerm={searchTerm}
               onSearch={setSearchTerm}
@@ -248,15 +216,15 @@ export default function MonumentsPage() {
         )}
       </div>
 
-      {/* Inline search (always visible) */}
+      {/* Inline search */}
       <div className="relative">
-        <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-zinc-600" />
+        <Search className="absolute top-1/2 left-4 h-4 w-4 -translate-y-1/2 text-zinc-500" />
         <input
           type="text"
           placeholder="Quick search monuments..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.currentTarget.value)}
-          className="w-full rounded-xl border border-white/6 bg-[#0d0d0d] py-3 pr-4 pl-11 text-sm text-white transition-colors outline-none placeholder:text-zinc-600 focus:border-white/12 focus:ring-0"
+          className="w-full rounded-xl border border-zinc-800/60 bg-zinc-900/60 py-3 pr-4 pl-11 text-sm text-white transition-colors outline-none placeholder:text-zinc-600 focus:border-zinc-600 focus:ring-0"
         />
       </div>
 
@@ -264,47 +232,40 @@ export default function MonumentsPage() {
       {filteredModels.length > 0 ? (
         <MonumentsGrid models={filteredModels} onOpenAr={openArModal} />
       ) : (
-        <div className="relative overflow-hidden rounded-2xl border border-white/6 bg-[#0d0d0d] py-24 text-center">
-          <div className="pointer-events-none absolute top-1/2 left-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 rounded-full bg-zinc-500/5 blur-3xl" />
-          <div className="relative flex flex-col items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/8 bg-white/4">
-              <Search className="h-6 w-6 text-zinc-600" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-white">
-                No monuments found
-              </h3>
-              <p className="mt-1 text-sm text-zinc-600">
-                Try adjusting your search or filters.
-              </p>
-            </div>
-            <button
-              onClick={() => {
-                setSearchTerm("");
-                setSelectedLocation("all");
-                setSelectedArchitecture("all");
-                setSelectedPeriod("all");
-              }}
-              className="rounded-xl border border-white/8 bg-white/4 px-5 py-2 text-sm font-semibold text-zinc-300 transition-all hover:border-white/12 hover:text-white"
-            >
-              Clear filters
-            </button>
+        <div className="flex flex-col items-center justify-center gap-4 rounded-xl border border-zinc-800/60 bg-zinc-950 py-20 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900">
+            <Search className="h-6 w-6 text-zinc-600" />
           </div>
+          <div>
+            <h3 className="text-base font-bold text-white">
+              No monuments found
+            </h3>
+            <p className="mt-1 text-sm text-zinc-500">
+              Try adjusting your search or filters.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setSearchTerm("");
+              setSelectedLocation("all");
+              setSelectedArchitecture("all");
+              setSelectedPeriod("all");
+            }}
+            className="rounded-lg border border-zinc-800 bg-transparent px-5 py-2 text-sm font-semibold text-zinc-300 transition-colors hover:bg-zinc-800 hover:text-white"
+          >
+            Clear filters
+          </button>
         </div>
       )}
 
       {/* ── VR Banner ── */}
-      <div className="relative overflow-hidden rounded-3xl border border-purple-500/15 bg-[#0a0a0a]">
-        <div className="pointer-events-none absolute inset-0 bg-linear-to-br from-purple-600/8 via-transparent to-blue-600/5" />
-        <div className="pointer-events-none absolute top-0 left-1/2 h-px w-1/2 -translate-x-1/2 bg-linear-to-r from-transparent via-purple-500/40 to-transparent" />
-
-        <div className="relative flex flex-col items-center gap-5 px-8 py-12 text-center">
-          <div className="relative flex h-16 w-16 items-center justify-center rounded-3xl border border-purple-500/25 bg-purple-500/10">
-            <div className="absolute inset-0 rounded-3xl bg-purple-500/10 blur-xl" />
-            <Headset className="relative h-7 w-7 text-purple-400" />
+      <div className="overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-950">
+        <div className="flex flex-col items-center gap-5 px-8 py-10 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900">
+            <Headset className="h-6 w-6 text-zinc-400" />
           </div>
           <div>
-            <h3 className="text-2xl font-black tracking-tight text-white">
+            <h3 className="text-xl font-bold tracking-tight text-white">
               Step into History
             </h3>
             <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-500">
@@ -324,7 +285,7 @@ export default function MonumentsPage() {
             ].map(({ emoji, label }) => (
               <span
                 key={label}
-                className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/4 px-4 py-1.5 text-xs font-medium text-zinc-400"
+                className="inline-flex items-center gap-2 rounded-full border border-zinc-700/60 bg-zinc-800/60 px-3 py-1.5 text-xs font-medium text-zinc-300"
               >
                 {emoji} {label}
               </span>

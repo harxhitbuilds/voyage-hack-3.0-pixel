@@ -77,6 +77,7 @@ export const onBoardUser = asyncHandler(async (req, res) => {
     lastName,
     username,
     hometown,
+    name: `${firstName} ${lastName}`.trim(),
     travelPreferences: {
       travelStyle,
       budgetRange,
@@ -139,13 +140,10 @@ export const getUserProfile = asyncHandler(async (req, res) => {
 });
 
 export const updateUserProfile = asyncHandler(async (req, res) => {
-  // Sanitize input data
   const sanitizedData = sanitizeOnboardingData(req.body);
 
-  // Validate input data (excluding required field validation for updates)
   const errors = [];
 
-  // Username format validation if provided
   if (
     sanitizedData.username &&
     !/^[a-zA-Z0-9_]+$/.test(sanitizedData.username)
@@ -153,7 +151,10 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     errors.push("Username can only contain letters, numbers, and underscores");
   }
 
-  // Array fields validation
+  if (sanitizedData.username && sanitizedData.username.length < 3) {
+    errors.push("Username must be at least 3 characters");
+  }
+
   const arrayFields = [
     "travelStyle",
     "budgetRange",
@@ -174,7 +175,6 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Validation failed", errors);
   }
 
-  // Check if username is already taken by another user (if username is being updated)
   if (sanitizedData.username) {
     const existingUser = await User.findOne({
       username: sanitizedData.username,
@@ -186,42 +186,39 @@ export const updateUserProfile = asyncHandler(async (req, res) => {
     }
   }
 
-  // Build update object with only provided fields
+  // Build a flat $set object — only touches fields that were actually sent
   const updateData = {};
 
-  // Basic fields
   if (sanitizedData.firstName) updateData.firstName = sanitizedData.firstName;
   if (sanitizedData.lastName) updateData.lastName = sanitizedData.lastName;
   if (sanitizedData.username) updateData.username = sanitizedData.username;
   if (sanitizedData.hometown) updateData.hometown = sanitizedData.hometown;
+  if (req.body.profile) updateData.profile = req.body.profile;
 
-  // Travel preferences - only update if any preference is provided
-  const travelPrefs = {};
-  if (sanitizedData.travelStyle)
-    travelPrefs.travelStyle = sanitizedData.travelStyle;
-  if (sanitizedData.budgetRange)
-    travelPrefs.budgetRange = sanitizedData.budgetRange;
-  if (sanitizedData.groupSize)
-    travelPrefs.groupSize = sanitizedData.groupSize;
-  if (sanitizedData.tripDuration)
-    travelPrefs.tripDuration = sanitizedData.tripDuration;
-  if (sanitizedData.travelFrequency)
-    travelPrefs.travelFrequency = sanitizedData.travelFrequency;
-  if (sanitizedData.accommodationType)
-    travelPrefs.accommodationType = sanitizedData.accommodationType;
-  if (sanitizedData.transportationPreference)
-    travelPrefs.transportationPreference =
-      sanitizedData.transportationPreference;
-
-  if (Object.keys(travelPrefs).length > 0) {
-    updateData.travelPreferences = travelPrefs;
+  // Keep the composite `name` field in sync
+  if (sanitizedData.firstName || sanitizedData.lastName) {
+    const currentUser = await User.findById(req.user._id).lean();
+    const first = sanitizedData.firstName || currentUser?.firstName || "";
+    const last = sanitizedData.lastName || currentUser?.lastName || "";
+    updateData.name = `${first} ${last}`.trim();
   }
 
-  // Update user in database
-  const updatedUser = await User.findByIdAndUpdate(req.user._id, updateData, {
-    new: true,
-    runValidators: true,
+  // Use dot-notation so individual sub-fields are updated without wiping siblings
+  arrayFields.forEach((field) => {
+    if (Array.isArray(sanitizedData[field]) && sanitizedData[field].length > 0) {
+      updateData[`travelPreferences.${field}`] = sanitizedData[field];
+    }
   });
+
+  if (Object.keys(updateData).length === 0) {
+    throw new ApiError(400, "No valid fields to update", []);
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    { $set: updateData },
+    { new: true, runValidators: true }
+  );
 
   if (!updatedUser) {
     throw new ApiError(404, "User not found", []);

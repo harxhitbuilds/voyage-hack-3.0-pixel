@@ -122,7 +122,7 @@
 }
 
 @utility hero-heading {
-  @apply font-zentry text-5xl font-black uppercase sm:right-10 sm:text-7xl md:text-9xl lg:text-[12rem];
+  @apply font-zentry text-[2.5rem] leading-none font-black uppercase sm:right-10 sm:text-7xl md:text-9xl lg:text-[12rem];
 }
 
 @utility about-subtext {

@@ -1,6 +1,6 @@
-import React from "react";
 import { Building, MonitorSpeaker } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+
+import React from "react";
 
 interface Props {
   total: number;
@@ -10,14 +10,14 @@ interface Props {
 const StatsBadges: React.FC<Props> = ({ total, vrCount }) => {
   return (
     <div className="flex items-center gap-2">
-      <Badge className="border-primary/20 rounded-xl bg-white text-black">
-        <Building className="mr-1 h-3 w-3" />
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700/60 bg-zinc-800/60 px-3 py-1 text-xs font-medium text-zinc-300">
+        <Building className="h-3 w-3 text-zinc-400" />
         {total} Monuments
-      </Badge>
-      <Badge className="border-secondary/20 rounded-xl bg-white text-black">
-        <MonitorSpeaker className="mr-1 h-3 w-3" />
+      </span>
+      <span className="inline-flex items-center gap-1.5 rounded-full border border-zinc-700/60 bg-zinc-800/60 px-3 py-1 text-xs font-medium text-zinc-300">
+        <MonitorSpeaker className="h-3 w-3 text-zinc-400" />
         {vrCount} VR Ready
-      </Badge>
+      </span>
     </div>
   );
 };

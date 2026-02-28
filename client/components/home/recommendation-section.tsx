@@ -2,6 +2,8 @@
 
 import {
   ArrowRight,
+  Compass,
+  Map,
   MapPin,
   RefreshCw,
   Sparkles,
@@ -86,8 +88,8 @@ const RecommendationSection = ({
     return (
       <section className="space-y-5">
         <SectionLabel heading={heading} isTrending={isTrending} />
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/6 bg-white/2 py-14 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+        <div className="flex flex-col items-center gap-3 rounded-xl border border-zinc-800/60 bg-zinc-950 py-14 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900">
             {isTrending ? (
               <TrendingUp className="h-5 w-5 text-zinc-500" />
             ) : (
@@ -104,7 +106,7 @@ const RecommendationSection = ({
               variant="outline"
               size="sm"
               asChild
-              className="border-zinc-700 text-zinc-400 hover:text-white"
+              className="border-zinc-800 text-zinc-400 hover:bg-zinc-800 hover:text-white"
             >
               <Link href="/home/profile">Update Profile</Link>
             </Button>
@@ -122,7 +124,7 @@ const RecommendationSection = ({
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2.2fr_1fr_1fr]">
         {/* ── Featured card (large) ── */}
-        <div className="group relative h-80 overflow-hidden rounded-2xl border border-white/6 lg:h-auto lg:min-h-85">
+        <div className="group relative h-80 overflow-hidden rounded-xl border border-zinc-800/60 lg:h-auto lg:min-h-85">
           {featured.picture || featured.imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -139,11 +141,11 @@ const RecommendationSection = ({
 
           {/* Top badges */}
           <div className="absolute top-4 left-4 flex items-center gap-2">
-            <span className="rounded-full border border-white/20 bg-black/50 px-3 py-1 text-[10px] font-bold tracking-widest text-white uppercase backdrop-blur-sm">
-              {isTrending ? "🔥 Trending" : "⭐ Top Pick"}
+            <span className="rounded-full border border-zinc-600 bg-black/60 px-3 py-1 text-[10px] font-bold tracking-widest text-zinc-200 uppercase backdrop-blur-sm">
+              {isTrending ? "Trending" : "Top Pick"}
             </span>
             {featured.matchScore && (
-              <span className="rounded-full border border-violet-400/30 bg-violet-500/20 px-2.5 py-1 text-[10px] font-bold text-violet-300 backdrop-blur-sm">
+              <span className="rounded-full border border-zinc-600 bg-black/60 px-2.5 py-1 text-[10px] font-bold text-zinc-300 backdrop-blur-sm">
                 {Math.round(featured.matchScore * 100)}% match
               </span>
             )}
@@ -163,10 +165,22 @@ const RecommendationSection = ({
             <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-zinc-300/80">
               {featured.description}
             </p>
-            <button className="group/btn mt-4 flex items-center gap-2 rounded-xl border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold text-white backdrop-blur-sm transition-all hover:border-white/30 hover:bg-white/20">
-              Explore
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover/btn:translate-x-0.5" />
-            </button>
+            <div className="mt-4 flex gap-4">
+              <Link
+                href="/home/experience"
+                className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-xs font-medium text-zinc-300 backdrop-blur-sm transition-all hover:border-zinc-500 hover:bg-zinc-800 hover:text-white"
+              >
+                <Compass className="h-3.5 w-3.5" />
+                Explore
+              </Link>
+              <Link
+                href="/home/trips"
+                className="flex items-center gap-1.5 rounded-lg border border-zinc-700 bg-zinc-800/60 px-3 py-2 text-xs font-medium text-zinc-300 backdrop-blur-sm transition-all hover:border-zinc-500 hover:bg-zinc-800 hover:text-white"
+              >
+                <Map className="h-3.5 w-3.5" />
+                Plan a Trip
+              </Link>
+            </div>
           </div>
         </div>
 
@@ -196,23 +210,19 @@ const SectionLabel = ({
   <div className="flex items-center justify-between">
     <div className="flex items-center gap-3">
       <div
-        className={`flex h-7 w-7 items-center justify-center rounded-lg border ${
-          isTrending
-            ? "border-amber-500/30 bg-amber-500/10"
-            : "border-violet-500/30 bg-violet-500/10"
-        }`}
+        className={`flex h-7 w-7 items-center justify-center rounded-lg border border-zinc-800 bg-zinc-900`}
       >
         {isTrending ? (
-          <TrendingUp className="h-3.5 w-3.5 text-amber-400" />
+          <TrendingUp className="h-3.5 w-3.5 text-zinc-400" />
         ) : (
-          <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+          <Sparkles className="h-3.5 w-3.5 text-zinc-400" />
         )}
       </div>
       <h2 className="text-base font-bold tracking-tight text-white">
         {heading}
       </h2>
     </div>
-    <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-500 transition-all hover:bg-white/5 hover:text-white">
+    <button className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium text-zinc-500 transition-all hover:bg-zinc-900 hover:text-white">
       View all <ArrowRight className="h-3.5 w-3.5" />
     </button>
   </div>
@@ -228,7 +238,7 @@ const SmallCard = ({
   index: number;
   isTrending: boolean;
 }) => (
-  <div className="group relative h-80 overflow-hidden rounded-2xl border border-white/6 lg:h-auto">
+  <div className="group relative h-80 overflow-hidden rounded-xl border border-zinc-800/60 lg:h-auto">
     {rec.picture || rec.imageUrl ? (
       // eslint-disable-next-line @next/next/no-img-element
       <img
@@ -244,11 +254,11 @@ const SmallCard = ({
     {/* Rank / match */}
     <div className="absolute top-3 left-3">
       {isTrending ? (
-        <span className="rounded-full border border-amber-500/30 bg-black/60 px-2.5 py-1 text-[10px] font-bold text-amber-300 backdrop-blur-sm">
+        <span className="rounded-full border border-zinc-600 bg-black/60 px-2.5 py-1 text-[10px] font-bold text-zinc-300 backdrop-blur-sm">
           #{index + 1}
         </span>
       ) : rec.matchScore ? (
-        <span className="rounded-full border border-violet-400/30 bg-black/60 px-2.5 py-1 text-[10px] font-bold text-violet-300 backdrop-blur-sm">
+        <span className="rounded-full border border-zinc-600 bg-black/60 px-2.5 py-1 text-[10px] font-bold text-zinc-300 backdrop-blur-sm">
           {Math.round(rec.matchScore * 100)}%
         </span>
       ) : null}
@@ -268,6 +278,22 @@ const SmallCard = ({
       <p className="mt-1.5 line-clamp-2 text-[11px] leading-relaxed text-zinc-400">
         {rec.description}
       </p>
+      <div className="mt-3 flex gap-2">
+        <Link
+          href="/home/trips"
+          className="flex items-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800/60 px-2.5 py-1.5 text-[10px] font-medium text-zinc-300 backdrop-blur-sm transition-all hover:border-zinc-500 hover:bg-zinc-800 hover:text-white"
+        >
+          <Map className="h-3 w-3" />
+          Plan a Trip
+        </Link>
+        <Link
+          href="/home/experience"
+          className="flex items-center gap-1 rounded-lg border border-zinc-700 bg-zinc-800/60 px-2.5 py-1.5 text-[10px] font-medium text-zinc-300 backdrop-blur-sm transition-all hover:border-zinc-500 hover:bg-zinc-800 hover:text-white"
+        >
+          <Compass className="h-3 w-3" />
+          Explore More
+        </Link>
+      </div>
     </div>
   </div>
 );

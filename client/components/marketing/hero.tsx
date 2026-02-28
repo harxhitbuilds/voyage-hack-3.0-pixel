@@ -15,20 +15,20 @@ const Hero = () => {
   const [hasClicked, setHasClicked] = useState(false);
 
   const [loading, setLoading] = useState(true);
-  const [loadedVideos, setLoadedVideos] = useState(0);
 
   const totalVideos = 4;
   const nextVdRef = useRef<HTMLVideoElement>(null);
 
-  const handleVideoLoad = () => {
-    setLoadedVideos((prev) => prev + 1);
+  const handleMainVideoReady = () => {
+    setLoading(false);
   };
 
   useEffect(() => {
-    if (loadedVideos === totalVideos - 1) {
+    const timeout = setTimeout(() => {
       setLoading(false);
-    }
-  }, [loadedVideos]);
+    }, 3000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleMiniVdClick = () => {
     setHasClicked(true);
@@ -88,22 +88,26 @@ const Hero = () => {
 
   return (
     <div className="relative h-dvh w-screen overflow-x-hidden">
-      {loading && (
-        <div className="flex-center absolute z-100 h-dvh w-screen overflow-hidden bg-violet-50">
-          <div className="three-body">
-            <div className="three-body__dot"></div>
-            <div className="three-body__dot"></div>
-            <div className="three-body__dot"></div>
-          </div>
+      {/* Loading overlay with fade-out */}
+      <div
+        className={`flex-center absolute z-100 h-dvh w-screen overflow-hidden bg-violet-50 transition-opacity duration-700 ${
+          loading ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+      >
+        <div className="three-body">
+          <div className="three-body__dot"></div>
+          <div className="three-body__dot"></div>
+          <div className="three-body__dot"></div>
         </div>
-      )}
+      </div>
 
       <div
         id="video-frame"
         className="bg-blue-75 relative z-10 h-dvh w-screen overflow-hidden rounded-lg"
       >
         <div>
-          <div className="mask-clip-path absolute-center absolute z-50 size-64 cursor-pointer overflow-hidden rounded-lg">
+          {/* Mini video click target — smaller on mobile */}
+          <div className="mask-clip-path absolute-center absolute z-50 size-40 cursor-pointer overflow-hidden rounded-lg sm:size-52 md:size-64">
             <div
               onClick={handleMiniVdClick}
               className="origin-center scale-50 opacity-0 transition-all duration-500 ease-in hover:scale-100 hover:opacity-100"
@@ -113,9 +117,9 @@ const Hero = () => {
                 src={getVideoSrc((currentIndex % totalVideos) + 1)}
                 loop
                 muted
+                playsInline
                 id="current-video"
-                className="size-64 origin-center scale-150 object-cover object-center"
-                onLoadedData={handleVideoLoad}
+                className="size-40 origin-center scale-150 object-cover object-center sm:size-52 md:size-64"
               />
             </div>
           </div>
@@ -125,9 +129,9 @@ const Hero = () => {
             src={getVideoSrc(currentIndex)}
             loop
             muted
+            playsInline
             id="next-video"
-            className="absolute-center invisible absolute z-20 size-64 object-cover object-center"
-            onLoadedData={handleVideoLoad}
+            className="absolute-center invisible absolute z-20 size-40 object-cover object-center sm:size-52 md:size-64"
           />
           <video
             src={getVideoSrc(
@@ -136,22 +140,25 @@ const Hero = () => {
             autoPlay
             loop
             muted
+            playsInline
             className="absolute top-0 left-0 size-full object-cover object-center"
-            onLoadedData={handleVideoLoad}
+            onCanPlayThrough={handleMainVideoReady}
+            onLoadedData={handleMainVideoReady}
           />
         </div>
 
-        <h1 className="special-font hero-heading text-blue-75 absolute right-5 bottom-5 z-40">
+        {/* Bottom-right NIMBUS inside video frame */}
+        <h1 className="special-font hero-heading text-blue-75 absolute right-3 bottom-3 z-40 sm:right-5 sm:bottom-5">
           N<b>I</b>M<b>BU</b>S
         </h1>
 
         <div className="absolute top-0 left-0 z-40 size-full">
-          <div className="mt-24 px-5 sm:px-10">
+          <div className="mt-16 px-4 sm:mt-24 sm:px-10">
             <h1 className="special-font hero-heading text-blue-100">
               EXPLORE <br /> INDIA
             </h1>
 
-            <p className="font-robert-regular mb-5 max-w-72 text-blue-100">
+            <p className="font-robert-regular mt-2 mb-4 max-w-64 text-sm text-blue-100 sm:mb-5 sm:max-w-72 sm:text-base">
               Command the Journey. <br />
               Architect the Experience
             </p>
@@ -167,7 +174,8 @@ const Hero = () => {
         </div>
       </div>
 
-      <h1 className="special-font hero-heading absolute right-5 bottom-5 text-black">
+      {/* Bottom-right NIMBUS outside video frame (parallax layer) */}
+      <h1 className="special-font hero-heading absolute right-3 bottom-3 text-black sm:right-5 sm:bottom-5">
         NIMBUS
       </h1>
     </div>

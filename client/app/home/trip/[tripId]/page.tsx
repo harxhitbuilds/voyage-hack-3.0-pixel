@@ -43,8 +43,8 @@ export default function TripDetailPage({ params }: PageProps) {
   if (error || !trip) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/10">
-          <Phone className="h-7 w-7 text-red-400" />
+        <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-zinc-800 bg-zinc-900">
+          <Phone className="h-6 w-6 text-zinc-400" />
         </div>
         <h3 className="text-base font-semibold text-white">Trip not found</h3>
         <p className="max-w-xs text-sm text-zinc-500">
@@ -55,7 +55,7 @@ export default function TripDetailPage({ params }: PageProps) {
   }
 
   return (
-    <div className="min-h-screen space-y-8 px-1 py-8 pb-24">
+    <div className="mx-auto w-full space-y-8 px-8 py-10 pb-24 md:px-8">
       {/* Header */}
       <TripDetailHeader trip={trip} tripId={tripId} />
 

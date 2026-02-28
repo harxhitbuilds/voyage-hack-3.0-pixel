@@ -28,7 +28,7 @@ const MonumentCard: React.FC<Props> = ({
   ).length;
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-white/6 bg-[#0d0d0d] transition-all duration-300 hover:border-white/12 hover:shadow-2xl hover:shadow-black/60">
+    <article className="group relative flex flex-col overflow-hidden rounded-xl border border-zinc-800/60 bg-zinc-950 transition-all duration-300 hover:border-zinc-700">
       {/* Image */}
       <div className="relative h-52 overflow-hidden bg-zinc-900">
         {monument.imageUrl ? (
@@ -44,41 +44,41 @@ const MonumentCard: React.FC<Props> = ({
           </div>
         )}
 
-        {/* Image overlay layers */}
-        <div className="absolute inset-0 bg-linear-to-t from-[#0d0d0d] via-black/30 to-transparent" />
+        {/* Image overlay */}
+        <div className="absolute inset-0 bg-linear-to-t from-zinc-950 via-black/30 to-transparent" />
 
         {/* Top: capability chips */}
         <div className="absolute top-3 right-3 flex flex-col items-end gap-1.5">
           {has3D(monument) && (
-            <span className="rounded-md border border-blue-500/30 bg-black/70 px-2 py-0.5 text-[10px] font-bold text-blue-400 backdrop-blur-sm">
+            <span className="rounded-md border border-zinc-600 bg-zinc-900/80 px-2 py-0.5 text-[10px] font-bold text-zinc-300 backdrop-blur-sm">
               3D
             </span>
           )}
           {hasAR(monument) && (
-            <span className="rounded-md border border-emerald-500/30 bg-black/70 px-2 py-0.5 text-[10px] font-bold text-emerald-400 backdrop-blur-sm">
+            <span className="rounded-md border border-zinc-600 bg-zinc-900/80 px-2 py-0.5 text-[10px] font-bold text-zinc-300 backdrop-blur-sm">
               AR
             </span>
           )}
           {hasVR(monument) && (
-            <span className="rounded-md border border-purple-500/30 bg-black/70 px-2 py-0.5 text-[10px] font-bold text-purple-400 backdrop-blur-sm">
+            <span className="rounded-md border border-zinc-600 bg-zinc-900/80 px-2 py-0.5 text-[10px] font-bold text-zinc-300 backdrop-blur-sm">
               VR
             </span>
           )}
         </div>
 
-        {/* Experience count dot */}
+        {/* Experience count */}
         {count > 0 && (
           <div className="absolute top-3 left-3">
-            <span className="rounded-full border border-white/15 bg-black/70 px-2.5 py-1 text-[10px] font-semibold text-white backdrop-blur-sm">
+            <span className="rounded-full border border-zinc-600 bg-zinc-900/80 px-2.5 py-1 text-[10px] font-medium text-zinc-300 backdrop-blur-sm">
               {count} {count === 1 ? "experience" : "experiences"}
             </span>
           </div>
         )}
 
-        {/* Name overlay at bottom of image */}
+        {/* Name overlay */}
         <div className="absolute right-0 bottom-0 left-0 px-4 pb-4">
           <h3
-            className="text-base leading-tight font-black text-white"
+            className="text-base leading-tight font-bold text-white"
             title={monument.name}
           >
             {monument.name}
@@ -98,15 +98,13 @@ const MonumentCard: React.FC<Props> = ({
 
       {/* Body */}
       <div className="flex flex-1 flex-col gap-4 p-4">
-        {/* Description */}
         <p className="line-clamp-2 text-[12px] leading-relaxed text-zinc-500">
           {monument.description ||
             "A remarkable piece of India's architectural heritage."}
         </p>
 
-        {/* Architecture badge */}
         {monument.architecture && (
-          <span className="self-start rounded-lg border border-white/6 bg-white/4 px-2.5 py-1 text-[10px] font-medium text-zinc-500">
+          <span className="self-start rounded-full border border-zinc-700/60 bg-zinc-800/60 px-2.5 py-1 text-[10px] font-medium text-zinc-300">
             {monument.architecture}
           </span>
         )}
@@ -117,7 +115,6 @@ const MonumentCard: React.FC<Props> = ({
             label="3D"
             icon={<Box className="h-3.5 w-3.5" />}
             enabled={has3D(monument)}
-            accent="blue"
             onClick={() =>
               monument.sketchfabUid && onOpenAr(String(monument.sketchfabUid))
             }
@@ -126,14 +123,12 @@ const MonumentCard: React.FC<Props> = ({
             label="AR"
             icon={<Eye className="h-3.5 w-3.5" />}
             enabled={hasAR(monument)}
-            accent="emerald"
             onClick={() => onOpenArlink(monument.arlink)}
           />
           <ActionBtn
-            label={hasVR(monument) ? "VR" : "VR"}
+            label="VR"
             icon={<Headset className="h-3.5 w-3.5" />}
             enabled={hasVR(monument)}
-            accent="purple"
             suffix={
               hasVR(monument) ? (
                 <ExternalLink className="ml-0.5 h-2.5 w-2.5" />
@@ -148,37 +143,26 @@ const MonumentCard: React.FC<Props> = ({
 };
 
 /* ── ActionBtn sub-component ── */
-type Accent = "blue" | "emerald" | "purple";
-const accentClasses: Record<Accent, string> = {
-  blue: "border-blue-500/25 bg-blue-500/8 text-blue-400 hover:border-blue-400/40 hover:bg-blue-500/15",
-  emerald:
-    "border-emerald-500/25 bg-emerald-500/8 text-emerald-400 hover:border-emerald-400/40 hover:bg-emerald-500/15",
-  purple:
-    "border-purple-500/25 bg-purple-500/8 text-purple-400 hover:border-purple-400/40 hover:bg-purple-500/15",
-};
-const disabledClass =
-  "cursor-not-allowed border-white/5 bg-white/2 text-zinc-700";
-
 const ActionBtn = ({
   label,
   icon,
   enabled,
-  accent,
   onClick,
   suffix,
 }: {
   label: string;
   icon: React.ReactNode;
   enabled: boolean;
-  accent: Accent;
   onClick: () => void;
   suffix?: React.ReactNode;
 }) => (
   <button
     onClick={onClick}
     disabled={!enabled}
-    className={`flex items-center justify-center gap-1.5 rounded-xl border px-2 py-2.5 text-xs font-semibold transition-all duration-200 ${
-      enabled ? accentClasses[accent] : disabledClass
+    className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2.5 text-xs font-medium transition-all duration-200 ${
+      enabled
+        ? "border-zinc-800 bg-transparent text-zinc-300 hover:bg-zinc-800 hover:text-white"
+        : "cursor-not-allowed border-zinc-800/40 bg-zinc-900/30 text-zinc-700"
     }`}
   >
     {icon}

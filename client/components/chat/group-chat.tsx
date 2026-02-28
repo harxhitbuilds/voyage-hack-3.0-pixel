@@ -101,35 +101,35 @@ export default function GroupChat({ roomId }: GroupChatProps) {
   if (isLoading && !activeRoom) {
     return (
       <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-white/40" />
+        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
       </div>
     );
   }
 
   if (!activeRoom) {
     return (
-      <div className="flex h-full items-center justify-center text-white/40">
+      <div className="flex h-full items-center justify-center text-zinc-500">
         Room not found.
       </div>
     );
   }
 
   return (
-    <div className="flex h-[calc(100vh-80px)] flex-col overflow-hidden rounded-2xl border border-white/5 bg-black/30 backdrop-blur-xl">
+    <div className="flex h-[calc(100vh-80px)] flex-col overflow-hidden rounded-2xl bg-zinc-950/80 backdrop-blur-xl">
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between border-b border-white/5 px-5 py-4">
+      <div className="flex items-center justify-between border-b border-zinc-800 px-5 py-4">
         <div className="flex items-center gap-3">
           <button
             onClick={() => router.push("/home/chat")}
-            className="rounded-full p-1.5 transition-colors hover:bg-white/5"
+            className="rounded-full p-1.5 transition-colors hover:bg-zinc-800"
           >
-            <ArrowLeft className="h-4 w-4 text-white/60" />
+            <ArrowLeft className="h-4 w-4 text-zinc-400" />
           </button>
           <div>
             <h2 className="text-base font-semibold tracking-tight text-white">
               {activeRoom.name}
             </h2>
-            <p className="text-xs text-white/40">
+            <p className="text-xs text-zinc-500">
               {activeRoom.members.length} members
             </p>
           </div>
@@ -139,7 +139,7 @@ export default function GroupChat({ roomId }: GroupChatProps) {
           {/* Invite code badge */}
           <button
             onClick={handleCopyCode}
-            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] text-white/50 transition-colors hover:bg-white/10"
+            className="flex items-center gap-1.5 rounded-full border border-zinc-700 bg-zinc-800/60 px-3 py-1 text-[11px] text-zinc-400 transition-colors hover:bg-zinc-800"
             title="Copy invite code"
           >
             <Copy className="h-3 w-3" />
@@ -151,14 +151,14 @@ export default function GroupChat({ roomId }: GroupChatProps) {
             {activeRoom.members.slice(0, 5).map((m) => (
               <span
                 key={m.userId}
-                className="flex h-7 w-7 items-center justify-center rounded-full border border-black bg-white/10 text-xs font-medium text-white/70"
+                className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-800 bg-zinc-800 text-xs font-medium text-zinc-300"
                 title={m.name}
               >
                 {m.name.charAt(0).toUpperCase()}
               </span>
             ))}
             {activeRoom.members.length > 5 && (
-              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-black bg-white/10 text-[10px] text-white/50">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-zinc-800 bg-zinc-800 text-[10px] text-zinc-400">
                 +{activeRoom.members.length - 5}
               </span>
             )}
@@ -182,8 +182,8 @@ export default function GroupChat({ roomId }: GroupChatProps) {
         {/* Generating plan indicator */}
         {isGeneratingPlan && (
           <div className="flex items-center justify-center gap-2 py-4">
-            <Loader2 className="h-4 w-4 animate-spin text-white/40" />
-            <span className="text-xs text-white/40">
+            <Loader2 className="h-4 w-4 animate-spin text-zinc-500" />
+            <span className="text-xs text-zinc-500">
               Nimbus is crafting your plan…
             </span>
           </div>
@@ -193,7 +193,7 @@ export default function GroupChat({ roomId }: GroupChatProps) {
       </div>
 
       {/* ── Input Area ──────────────────────────────────────────────────── */}
-      <div className="border-t border-white/5 px-4 py-3">
+      <div className="border-t border-zinc-800 px-4 py-3">
         <div className="flex items-end gap-2">
           {/* Generate plan button */}
           <button
@@ -202,8 +202,8 @@ export default function GroupChat({ roomId }: GroupChatProps) {
             className={cn(
               "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-300",
               isGeneratingPlan
-                ? "cursor-not-allowed bg-white/5 text-white/20"
-                : "bg-white/5 text-white/50 hover:bg-white/10 hover:text-white",
+                ? "cursor-not-allowed bg-zinc-800/60 text-zinc-600"
+                : "bg-zinc-800/60 text-zinc-400 hover:bg-zinc-800 hover:text-white",
             )}
             title="Generate AI consensus plan"
           >
@@ -218,7 +218,7 @@ export default function GroupChat({ roomId }: GroupChatProps) {
               onKeyDown={handleKeyDown}
               placeholder="Type your message… (or type @Nimbus to generate a plan)"
               rows={1}
-              className="w-full resize-none rounded-xl border border-white/5 bg-white/5 px-4 py-2.5 text-sm text-white placeholder:text-white/25 focus:border-white/10 focus:ring-0 focus:outline-none"
+              className="w-full resize-none rounded-xl border border-zinc-800 bg-zinc-900 px-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-zinc-600 focus:ring-0 focus:outline-none"
             />
           </div>
 
@@ -229,8 +229,8 @@ export default function GroupChat({ roomId }: GroupChatProps) {
             className={cn(
               "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-all duration-300",
               input.trim()
-                ? "bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.1)]"
-                : "cursor-not-allowed bg-white/5 text-white/20",
+                ? "bg-white text-black shadow-lg"
+                : "cursor-not-allowed bg-zinc-800/60 text-zinc-600",
             )}
           >
             <Send className="h-4 w-4" />
@@ -262,7 +262,7 @@ function MessageBubble({
   if (message.type === "system") {
     return (
       <div className="flex justify-center py-2">
-        <span className="rounded-full bg-white/5 px-3 py-1 text-[11px] text-white/30">
+        <span className="rounded-full bg-zinc-800/60 px-3 py-1 text-[11px] text-zinc-500">
           {message.content}
         </span>
       </div>
@@ -294,7 +294,7 @@ function MessageBubble({
     >
       {/* Avatar (other users only) */}
       {!isOwn && (
-        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/10 text-xs font-medium text-white/60">
+        <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-zinc-800 text-xs font-medium text-zinc-300">
           {message.senderName.charAt(0).toUpperCase()}
         </span>
       )}
@@ -302,7 +302,7 @@ function MessageBubble({
       <div className={cn("max-w-[70%]", isOwn ? "items-end" : "items-start")}>
         {/* Sender name (other users only) */}
         {!isOwn && (
-          <p className="mb-0.5 text-[11px] font-medium text-white/40">
+          <p className="mb-0.5 text-[11px] font-medium text-zinc-500">
             {message.senderName}
           </p>
         )}
@@ -312,7 +312,7 @@ function MessageBubble({
             "rounded-2xl px-4 py-2.5 text-sm leading-relaxed",
             isOwn
               ? "rounded-br-md bg-white text-black"
-              : "rounded-bl-md border border-white/5 bg-white/5 text-white/80",
+              : "rounded-bl-md border border-zinc-800 bg-zinc-800/80 text-zinc-200",
           )}
         >
           {message.content}
@@ -322,7 +322,7 @@ function MessageBubble({
         {message.createdAt && (
           <p
             className={cn(
-              "mt-0.5 text-[10px] text-white/20",
+              "mt-0.5 text-[10px] text-zinc-600",
               isOwn && "text-right",
             )}
           >

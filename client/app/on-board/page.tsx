@@ -1,65 +1,108 @@
 "use client";
 
-import { Check, ChevronRight, Sparkles, Map, Compass, Plane } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/store/auth.store";
 
-type Option = {
-  id: string;
-  label: string;
-  icon?: string;
-  description?: string;
-};
-
+/* ── Step config ─────────────────────────────────────────────── */
 const STEPS = [
-  {
-    id: "personal",
-    title: "Personal Info",
-    description: "Tell us about yourself",
-    icon: Sparkles,
-  },
-  {
-    id: "preferences",
-    title: "Travel Style",
-    description: "How do you like to travel?",
-    icon: Compass,
-  },
-  {
-    id: "details",
-    title: "Trip Details",
-    description: "Your typical trip details",
-    icon: Map,
-  },
-];
+  { id: "personal", title: "About you" },
+  { id: "preferences", title: "Travel style" },
+  { id: "details", title: "Trip details" },
+] as const;
 
+/* ── Chip component ──────────────────────────────────────────── */
+function Chip({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-[13px] font-medium transition-all duration-150 select-none",
+        selected
+          ? "border-white bg-white text-zinc-950"
+          : "border-zinc-800 bg-transparent text-zinc-400 hover:border-zinc-600 hover:text-zinc-200",
+      )}
+    >
+      {selected && <Check className="h-3.5 w-3.5" strokeWidth={2.5} />}
+      {label}
+    </button>
+  );
+}
+
+/* ── Grid chip ───────────────────────────────────────────────── */
+function GridChip({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex items-center justify-between rounded-xl border px-4 py-3 text-[13px] font-medium transition-all duration-150 select-none",
+        selected
+          ? "border-white bg-white text-zinc-950"
+          : "border-zinc-800 bg-transparent text-zinc-400 hover:border-zinc-600 hover:text-zinc-200",
+      )}
+    >
+      <span>{label}</span>
+      {selected && <Check className="h-3.5 w-3.5 shrink-0" strokeWidth={2.5} />}
+    </button>
+  );
+}
+
+/* ── Section wrapper ─────────────────────────────────────────── */
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <fieldset className="space-y-3">
+      <legend className="text-[13px] font-medium text-zinc-500">{title}</legend>
+      {children}
+    </fieldset>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════════ */
 export default function OnboardingPage() {
   const router = useRouter();
   const { user, onBoardUser, isLoading } = useAuthStore();
-  const [currentStep, setCurrentStep] = useState(0);
+  const [step, setStep] = useState(0);
 
   const {
     register,
     handleSubmit,
     watch,
     setValue,
+    trigger,
     formState: { errors },
   } = useForm({
+    mode: "onChange",
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
@@ -75,459 +118,406 @@ export default function OnboardingPage() {
     },
   });
 
-  const formData = watch();
+  const fd = watch();
 
+  // Redirect if already onboarded
   useEffect(() => {
-    if (user?.onBoarded) {
-      router.push("/home");
-    }
+    if (user?.onBoarded) router.push("/home");
   }, [user, router]);
 
-  const onSubmit = async (data: any) => {
-    try {
-      await onBoardUser(data);
-      router.push("/home");
-    } catch (error) {
-      console.error("Onboarding error:", error);
+  // Pre-fill form when user data arrives after redirect
+  useEffect(() => {
+    if (user) {
+      if (user.firstName) setValue("firstName", user.firstName);
+      if (user.lastName) setValue("lastName", user.lastName);
+      if (user.username) setValue("username", user.username);
+      if (user.hometown) setValue("hometown", user.hometown);
     }
-  };
+  }, [user, setValue]);
 
-  const nextStep = () => {
-    if (currentStep < STEPS.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+  /* ── Navigation ── */
+  const next = async () => {
+    if (step === 0) {
+      const ok = await trigger([
+        "firstName",
+        "lastName",
+        "username",
+        "hometown",
+      ]);
+      if (!ok) return;
+    }
+    if (step < STEPS.length - 1) {
+      setStep((s) => s + 1);
     } else {
       handleSubmit(onSubmit)();
     }
   };
 
-  const prevStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
+  const back = () => step > 0 && setStep((s) => s - 1);
+
+  const onSubmit = async (data: any) => {
+    try {
+      await onBoardUser(data);
+      router.push("/home");
+    } catch (err) {
+      console.error("Onboarding error:", err);
     }
   };
 
-  const toggleSelection = (field: string, value: string) => {
-    const currentValues = (formData as any)[field] || [];
-    const newValues = currentValues.includes(value)
-      ? currentValues.filter((v: string) => v !== value)
-      : [...currentValues, value];
-    setValue(field as any, newValues);
+  /* ── Toggle helper ── */
+  const toggle = (field: string, value: string) => {
+    const cur: string[] = (fd as any)[field] || [];
+    setValue(
+      field as any,
+      cur.includes(value)
+        ? cur.filter((v: string) => v !== value)
+        : [...cur, value],
+    );
   };
 
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 0:
-        return (
-          <div className="animate-in fade-in slide-in-from-right-4 space-y-6 duration-500">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2.5">
-                <Label htmlFor="firstName" className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">First Name</Label>
-                <Input
-                  id="firstName"
-                  placeholder="John"
-                  {...register("firstName", {
-                    required: "First name is required",
-                  })}
-                  className={cn(
-                    "bg-zinc-900/50 border-zinc-800 focus-visible:ring-zinc-700 h-12 px-4 rounded-xl transition-all",
-                    errors.firstName ? "border-red-500/50 focus-visible:ring-red-500/20" : ""
-                  )}
-                />
-                {errors.firstName && (
-                  <p className="text-red-400 text-xs mt-1.5">
-                    {errors.firstName.message as string}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2.5">
-                <Label htmlFor="lastName" className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">Last Name</Label>
-                <Input
-                  id="lastName"
-                  placeholder="Doe"
-                  {...register("lastName", {
-                    required: "Last name is required",
-                  })}
-                  className={cn(
-                    "bg-zinc-900/50 border-zinc-800 focus-visible:ring-zinc-700 h-12 px-4 rounded-xl transition-all",
-                    errors.lastName ? "border-red-500/50 focus-visible:ring-red-500/20" : ""
-                  )}
-                />
-                {errors.lastName && (
-                  <p className="text-red-400 text-xs mt-1.5">
-                    {errors.lastName.message as string}
-                  </p>
-                )}
-              </div>
-            </div>
+  /* ── Step 0 real-time validation ── */
+  const step0Valid =
+    fd.firstName.trim().length > 0 &&
+    fd.lastName.trim().length > 0 &&
+    fd.username.trim().length >= 3 &&
+    /^[a-zA-Z0-9_]+$/.test(fd.username.trim()) &&
+    fd.hometown.trim().length > 0;
 
-            <div className="space-y-2.5">
-              <Label htmlFor="username" className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">Username</Label>
-              <Input
-                id="username"
-                placeholder="@johndoe"
-                {...register("username", {
-                  required: "Username is required",
-                  minLength: {
-                    value: 3,
-                    message: "Username must be at least 3 characters",
-                  },
-                  pattern: {
-                    value: /^[a-zA-Z0-9_]+$/,
-                    message: "Only letters, numbers and underscores allowed",
-                  },
-                })}
-                className={cn(
-                  "bg-zinc-900/50 border-zinc-800 focus-visible:ring-zinc-700 h-12 px-4 rounded-xl transition-all",
-                  errors.username ? "border-red-500/50 focus-visible:ring-red-500/20" : ""
-                )}
-              />
-              {errors.username && (
-                <p className="text-red-400 text-xs mt-1.5">
-                  {errors.username.message as string}
-                </p>
-              )}
-            </div>
+  const canProceed = step === 0 ? step0Valid : true;
 
-            <div className="space-y-2.5">
-              <Label htmlFor="hometown" className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">Hometown</Label>
-              <Input
-                id="hometown"
-                placeholder="e.g. New York, USA"
-                {...register("hometown", { required: "Hometown is required" })}
-                className={cn(
-                  "bg-zinc-900/50 border-zinc-800 focus-visible:ring-zinc-700 h-12 px-4 rounded-xl transition-all",
-                  errors.hometown ? "border-red-500/50 focus-visible:ring-red-500/20" : ""
-                )}
-              />
-              {errors.hometown && (
-                <p className="text-red-400 text-xs mt-1.5">
-                  {errors.hometown.message as string}
-                </p>
-              )}
-            </div>
-          </div>
-        );
-
-      case 1:
-        return (
-          <div className="animate-in fade-in slide-in-from-right-4 space-y-8 duration-500">
-            <div className="space-y-4">
-              <Label className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">How do you prefer to travel?</Label>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  "Solo",
-                  "Couple",
-                  "Family",
-                  "Group",
-                  "Business",
-                  "Luxury",
-                  "Budget",
-                  "Backpacking",
-                ].map((option) => {
-                  const isSelected = formData.travelStyle?.includes(option);
-                  return (
-                    <div
-                      key={option}
-                      onClick={() => toggleSelection("travelStyle", option)}
-                      className={cn(
-                        "cursor-pointer rounded-xl border px-5 py-2.5 text-sm font-medium transition-all duration-200 flex items-center gap-2",
-                        isSelected
-                          ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                          : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/50",
-                      )}
-                    >
-                      {isSelected && <Check className="w-4 h-4" />}
-                      {option}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">What's your typical budget range?</Label>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {["Budget", "Moderate", "Luxury", "Ultra Luxury"].map(
-                  (option) => {
-                    const isSelected = formData.budgetRange?.includes(option);
-                    return (
-                      <div
-                        key={option}
-                        onClick={() => toggleSelection("budgetRange", option)}
-                        className={cn(
-                          "cursor-pointer rounded-xl border p-4 text-center text-sm font-medium transition-all duration-200",
-                          isSelected
-                            ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                            : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/50",
-                        )}
-                      >
-                        {option}
-                      </div>
-                    );
-                  },
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">Who do you usually travel with?</Label>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  "Solo",
-                  "Partner",
-                  "Family",
-                  "Friends",
-                  "Colleagues",
-                  "Tour Group",
-                ].map((option) => {
-                  const isSelected = formData.groupSize?.includes(option);
-                  return (
-                    <div
-                      key={option}
-                      onClick={() => toggleSelection("groupSize", option)}
-                      className={cn(
-                        "cursor-pointer rounded-xl border px-5 py-2.5 text-sm font-medium transition-all duration-200 flex items-center gap-2",
-                        isSelected
-                          ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                          : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/50",
-                      )}
-                    >
-                      {isSelected && <Check className="w-4 h-4" />}
-                      {option}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        );
-
-      case 2:
-        return (
-          <div className="animate-in fade-in slide-in-from-right-4 space-y-8 duration-500">
-            <div className="space-y-4">
-              <Label className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">How long are your trips usually?</Label>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  "Weekend (2-3 days)",
-                  "Short (4-7 days)",
-                  "Medium (1-2 weeks)",
-                  "Long (2+ weeks)",
-                ].map((option) => {
-                  const isSelected = formData.tripDuration?.includes(option);
-                  return (
-                    <div
-                      key={option}
-                      onClick={() => toggleSelection("tripDuration", option)}
-                      className={cn(
-                        "cursor-pointer rounded-xl border p-4 text-sm font-medium transition-all duration-200 flex items-center justify-between",
-                        isSelected
-                          ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                          : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/50",
-                      )}
-                    >
-                      {option}
-                      {isSelected && <Check className="w-4 h-4" />}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">How often do you travel?</Label>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {[
-                  "Monthly",
-                  "Quarterly",
-                  "Bi-annually",
-                  "Yearly",
-                  "Rarely",
-                ].map((option) => {
-                  const isSelected = formData.travelFrequency?.includes(option);
-                  return (
-                    <div
-                      key={option}
-                      onClick={() => toggleSelection("travelFrequency", option)}
-                      className={cn(
-                        "cursor-pointer rounded-xl border p-4 text-center text-sm font-medium transition-all duration-200",
-                        isSelected
-                          ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                          : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/50",
-                      )}
-                    >
-                      {option}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">Preferred Accommodation?</Label>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  "Hotel",
-                  "Hostel",
-                  "Resort",
-                  "Airbnb/Rental",
-                  "Camping",
-                  "Homestay",
-                ].map((option) => {
-                  const isSelected = formData.accommodationType?.includes(option);
-                  return (
-                    <div
-                      key={option}
-                      onClick={() => toggleSelection("accommodationType", option)}
-                      className={cn(
-                        "cursor-pointer rounded-xl border px-5 py-2.5 text-sm font-medium transition-all duration-200 flex items-center gap-2",
-                        isSelected
-                          ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                          : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/50",
-                      )}
-                    >
-                      {isSelected && <Check className="w-4 h-4" />}
-                      {option}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <Label className="text-zinc-400 text-xs uppercase tracking-wider font-semibold">Preferred Transportation?</Label>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  "Flight",
-                  "Train",
-                  "Bus",
-                  "Car Rental",
-                  "Public Transit",
-                  "Walking",
-                ].map((option) => {
-                  const isSelected = formData.transportationPreference?.includes(option);
-                  return (
-                    <div
-                      key={option}
-                      onClick={() =>
-                        toggleSelection("transportationPreference", option)
-                      }
-                      className={cn(
-                        "cursor-pointer rounded-xl border px-5 py-2.5 text-sm font-medium transition-all duration-200 flex items-center gap-2",
-                        isSelected
-                          ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.1)]"
-                          : "bg-zinc-900/50 text-zinc-300 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/50",
-                      )}
-                    >
-                      {isSelected && <Check className="w-4 h-4" />}
-                      {option}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        );
-
-      default:
-        return null;
-    }
-  };
+  /* ── Progress ── */
+  const progress = ((step + 1) / STEPS.length) * 100;
 
   return (
-    <div className="bg-black min-h-screen flex items-center justify-center p-4 sm:p-8 font-sans selection:bg-white/20">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900/40 via-black to-black pointer-events-none" />
-      
-      <Card className="w-full max-w-3xl bg-zinc-950/50 border-zinc-800/50 shadow-2xl backdrop-blur-xl relative overflow-hidden rounded-2xl">
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-        
-        <CardHeader className="text-center pb-8 pt-10 px-8">
-          <div className="mx-auto w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10 shadow-[0_0_30px_rgba(255,255,255,0.05)]">
-            <Plane className="w-6 h-6 text-white" />
-          </div>
-          <CardTitle className="text-3xl font-bold tracking-tight text-white mb-2">
-            Welcome to Nimbus
-          </CardTitle>
-          <CardDescription className="text-zinc-400 text-base">
-            Let's personalize your experience. Step {currentStep + 1} of {STEPS.length}
-          </CardDescription>
-        </CardHeader>
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-black px-4 py-10 font-sans antialiased selection:bg-white/20 sm:px-6">
+      {/* Subtle top glow */}
+      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(50%_40%_at_50%_0%,rgba(255,255,255,0.04),transparent)]" />
 
-        <div className="px-8 pb-8">
-          <div className="flex justify-between relative">
-            <div className="absolute top-1/2 left-0 w-full h-[2px] bg-zinc-800 -z-10 -translate-y-1/2 rounded-full" />
-            <div 
-              className="absolute top-1/2 left-0 h-[2px] bg-white -z-10 -translate-y-1/2 transition-all duration-500 ease-out rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"
-              style={{ width: `${(currentStep / (STEPS.length - 1)) * 100}%` }}
+      <div className="relative w-full max-w-xl">
+        {/* ── Progress bar ── */}
+        <div className="mb-8">
+          <div className="mb-3 flex items-baseline justify-between">
+            <p className="text-[13px] text-zinc-500">
+              Step {step + 1} of {STEPS.length}
+            </p>
+            <p className="text-[13px] font-medium text-zinc-400">
+              {STEPS[step].title}
+            </p>
+          </div>
+          <div className="h-0.75 w-full overflow-hidden rounded-full bg-zinc-900">
+            <div
+              className="h-full rounded-full bg-white transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
             />
-            
-            {STEPS.map((step, idx) => {
-              const StepIcon = step.icon;
-              const isActive = idx === currentStep;
-              const isCompleted = idx < currentStep;
-              
-              return (
-                <div key={step.id} className="flex flex-col items-center gap-3 bg-zinc-950 px-2">
-                  <div 
-                    className={cn(
-                      "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2",
-                      isActive 
-                        ? "bg-white border-white text-black shadow-[0_0_20px_rgba(255,255,255,0.2)] scale-110" 
-                        : isCompleted
-                          ? "bg-zinc-800 border-zinc-700 text-white"
-                          : "bg-zinc-950 border-zinc-800 text-zinc-500"
-                    )}
-                  >
-                    {isCompleted ? <Check className="w-5 h-5" /> : <StepIcon className="w-4 h-4" />}
-                  </div>
-                  <span className={cn(
-                    "text-xs font-medium uppercase tracking-wider transition-colors duration-300",
-                    isActive ? "text-white" : isCompleted ? "text-zinc-400" : "text-zinc-600"
-                  )}>
-                    {step.title}
-                  </span>
-                </div>
-              );
-            })}
           </div>
         </div>
 
-        <CardContent className="px-8 min-h-[400px]">
-          {renderStepContent()}
-        </CardContent>
+        {/* ── Card ── */}
+        <div className="rounded-2xl border border-zinc-800/60 bg-zinc-950 p-6 sm:p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-xl font-semibold tracking-tight text-white sm:text-2xl">
+              {step === 0 && "Tell us about yourself"}
+              {step === 1 && "How do you like to travel?"}
+              {step === 2 && "Your typical trip looks like\u2026"}
+            </h1>
+            <p className="mt-1.5 text-sm text-zinc-500">
+              {step === 0 &&
+                "We\u2019ll use this to personalise your Nimbus experience."}
+              {step === 1 &&
+                "Pick everything that applies \u2014 you can always change later."}
+              {step === 2 &&
+                "This helps us suggest better itineraries for you."}
+            </p>
+          </div>
 
-        <CardFooter className="flex justify-between p-8 border-t border-zinc-800/50 bg-zinc-950/30">
-          <Button
-            variant="ghost"
-            onClick={prevStep}
-            disabled={currentStep === 0 || isLoading}
-            className="w-28 h-12 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-all"
-          >
-            Back
-          </Button>
-
-          <Button
-            onClick={nextStep}
-            disabled={isLoading}
-            className="w-32 h-12 rounded-xl bg-white text-black hover:bg-zinc-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_25px_rgba(255,255,255,0.2)] font-semibold gap-2"
-          >
-            {currentStep === STEPS.length - 1 ? (
-              isLoading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
-                  Saving
+          {/* ── Step 0: Personal ── */}
+          {step === 0 && (
+            <div className="space-y-5">
+              <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div className="space-y-1.5">
+                  <label className="text-[13px] font-medium text-zinc-500">
+                    First name
+                  </label>
+                  <Input
+                    placeholder="John"
+                    autoFocus
+                    {...register("firstName", { required: "Required" })}
+                    className={cn(
+                      "h-11 rounded-xl border-zinc-800 bg-zinc-900/60 px-3.5 text-sm text-white placeholder:text-zinc-600 focus-visible:border-zinc-600 focus-visible:ring-0",
+                      errors.firstName && "border-red-500/40",
+                    )}
+                  />
+                  {errors.firstName && (
+                    <p className="text-xs text-red-400">
+                      {errors.firstName.message as string}
+                    </p>
+                  )}
                 </div>
+                <div className="space-y-1.5">
+                  <label className="text-[13px] font-medium text-zinc-500">
+                    Last name
+                  </label>
+                  <Input
+                    placeholder="Doe"
+                    {...register("lastName", { required: "Required" })}
+                    className={cn(
+                      "h-11 rounded-xl border-zinc-800 bg-zinc-900/60 px-3.5 text-sm text-white placeholder:text-zinc-600 focus-visible:border-zinc-600 focus-visible:ring-0",
+                      errors.lastName && "border-red-500/40",
+                    )}
+                  />
+                  {errors.lastName && (
+                    <p className="text-xs text-red-400">
+                      {errors.lastName.message as string}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-medium text-zinc-500">
+                  Username
+                </label>
+                <Input
+                  placeholder="johndoe"
+                  {...register("username", {
+                    required: "Required",
+                    minLength: { value: 3, message: "Min 3 characters" },
+                    pattern: {
+                      value: /^[a-zA-Z0-9_]+$/,
+                      message: "Letters, numbers & underscores only",
+                    },
+                  })}
+                  className={cn(
+                    "h-11 rounded-xl border-zinc-800 bg-zinc-900/60 px-3.5 text-sm text-white placeholder:text-zinc-600 focus-visible:border-zinc-600 focus-visible:ring-0",
+                    errors.username && "border-red-500/40",
+                  )}
+                />
+                {errors.username && (
+                  <p className="text-xs text-red-400">
+                    {errors.username.message as string}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-[13px] font-medium text-zinc-500">
+                  Hometown
+                </label>
+                <Input
+                  placeholder="e.g. Mumbai, India"
+                  {...register("hometown", { required: "Required" })}
+                  className={cn(
+                    "h-11 rounded-xl border-zinc-800 bg-zinc-900/60 px-3.5 text-sm text-white placeholder:text-zinc-600 focus-visible:border-zinc-600 focus-visible:ring-0",
+                    errors.hometown && "border-red-500/40",
+                  )}
+                />
+                {errors.hometown && (
+                  <p className="text-xs text-red-400">
+                    {errors.hometown.message as string}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* ── Step 1: Travel Style ── */}
+          {step === 1 && (
+            <div className="space-y-7">
+              <Section title="Travel style">
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Solo",
+                    "Couple",
+                    "Family",
+                    "Group",
+                    "Business",
+                    "Luxury",
+                    "Budget",
+                    "Backpacking",
+                  ].map((o) => (
+                    <Chip
+                      key={o}
+                      label={o}
+                      selected={fd.travelStyle?.includes(o)}
+                      onClick={() => toggle("travelStyle", o)}
+                    />
+                  ))}
+                </div>
+              </Section>
+
+              <Section title="Budget range">
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                  {["Budget", "Moderate", "Luxury", "Ultra Luxury"].map((o) => (
+                    <GridChip
+                      key={o}
+                      label={o}
+                      selected={fd.budgetRange?.includes(o)}
+                      onClick={() => toggle("budgetRange", o)}
+                    />
+                  ))}
+                </div>
+              </Section>
+
+              <Section title="Usually travel with">
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Solo",
+                    "Partner",
+                    "Family",
+                    "Friends",
+                    "Colleagues",
+                    "Tour Group",
+                  ].map((o) => (
+                    <Chip
+                      key={o}
+                      label={o}
+                      selected={fd.groupSize?.includes(o)}
+                      onClick={() => toggle("groupSize", o)}
+                    />
+                  ))}
+                </div>
+              </Section>
+            </div>
+          )}
+
+          {/* ── Step 2: Trip Details ── */}
+          {step === 2 && (
+            <div className="space-y-7">
+              <Section title="Trip duration">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {[
+                    "Weekend (2-3 days)",
+                    "Short (4-7 days)",
+                    "Medium (1-2 weeks)",
+                    "Long (2+ weeks)",
+                  ].map((o) => (
+                    <GridChip
+                      key={o}
+                      label={o}
+                      selected={fd.tripDuration?.includes(o)}
+                      onClick={() => toggle("tripDuration", o)}
+                    />
+                  ))}
+                </div>
+              </Section>
+
+              <Section title="Travel frequency">
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Monthly",
+                    "Quarterly",
+                    "Bi-annually",
+                    "Yearly",
+                    "Rarely",
+                  ].map((o) => (
+                    <Chip
+                      key={o}
+                      label={o}
+                      selected={fd.travelFrequency?.includes(o)}
+                      onClick={() => toggle("travelFrequency", o)}
+                    />
+                  ))}
+                </div>
+              </Section>
+
+              <Section title="Accommodation">
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Hotel",
+                    "Hostel",
+                    "Resort",
+                    "Airbnb / Rental",
+                    "Camping",
+                    "Homestay",
+                  ].map((o) => (
+                    <Chip
+                      key={o}
+                      label={o}
+                      selected={fd.accommodationType?.includes(o)}
+                      onClick={() => toggle("accommodationType", o)}
+                    />
+                  ))}
+                </div>
+              </Section>
+
+              <Section title="Transportation">
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    "Flight",
+                    "Train",
+                    "Bus",
+                    "Car Rental",
+                    "Public Transit",
+                    "Walking",
+                  ].map((o) => (
+                    <Chip
+                      key={o}
+                      label={o}
+                      selected={fd.transportationPreference?.includes(o)}
+                      onClick={() => toggle("transportationPreference", o)}
+                    />
+                  ))}
+                </div>
+              </Section>
+            </div>
+          )}
+
+          {/* ── Footer ── */}
+          <div className="mt-8 flex items-center justify-between border-t border-zinc-800/60 pt-6">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={back}
+              disabled={step === 0}
+              className="gap-1.5 rounded-lg px-4 text-zinc-500 hover:bg-zinc-900 hover:text-white disabled:opacity-0"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
+
+            <Button
+              type="button"
+              onClick={next}
+              disabled={!canProceed || isLoading}
+              className="gap-1.5 rounded-lg bg-white px-5 text-sm font-semibold text-black hover:bg-zinc-200 disabled:opacity-40"
+            >
+              {step === STEPS.length - 1 ? (
+                isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving…
+                  </>
+                ) : (
+                  "Complete setup"
+                )
               ) : (
-                "Complete"
-              )
-            ) : (
-              <>
-                Next <ChevronRight className="w-4 h-4" />
-              </>
-            )}
-          </Button>
-        </CardFooter>
-      </Card>
+                <>
+                  Continue
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
+        {/* ── Step dots ── */}
+        <div className="mt-6 flex justify-center gap-1.5">
+          {STEPS.map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                "h-1.5 rounded-full transition-all duration-300",
+                i === step
+                  ? "w-6 bg-white"
+                  : i < step
+                    ? "w-1.5 bg-zinc-500"
+                    : "w-1.5 bg-zinc-800",
+              )}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

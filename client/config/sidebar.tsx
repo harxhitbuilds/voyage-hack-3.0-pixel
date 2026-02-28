@@ -57,7 +57,7 @@ export const getSidebarConfig = (user: any) => {
           },
           {
             label: "Settings",
-            link: "/home/profile",
+            link: "/home/settings",
             icon: <Settings className="h-4 w-4" />,
             requiresAuth: true,
           },

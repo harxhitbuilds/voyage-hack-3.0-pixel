@@ -70,12 +70,25 @@ import recommendationRouter from "./routes/recommendation.route.js";
 import model3dRouter from "./routes/model3d.route.js";
 import chatRoomRouter from "./routes/chatroom.route.js";
 import { startTranscriptPolling } from "./controllers/vapi.controller.js";
+import { buildStatusData, renderStatusPage } from "./utils/statusPage.js";
 
 // Start background transcript polling
 startTranscriptPolling();
 
 app.get("/health", (req, res) => {
   res.json({ status: "OK", timestamp: new Date().toISOString() });
+});
+
+// Human-readable status page
+app.get("/status", (req, res) => {
+  const data = buildStatusData();
+  res.setHeader("Content-Type", "text/html");
+  res.send(renderStatusPage(data));
+});
+
+// JSON status endpoint
+app.get("/api/status", (req, res) => {
+  res.json(buildStatusData());
 });
 
 app.use("/api/auth", authRouter);
@@ -87,11 +100,7 @@ app.use("/api/chatroom", chatRoomRouter);
 
 // Routes
 app.get("/", (req, res) => {
-  res.json({ message: "Welcome to the Express server!" });
-});
-
-app.get("/api/health", (req, res) => {
-  res.json({ status: "OK", timestamp: new Date().toISOString() });
+  res.json({ message: "Welcome to the Nimbus API!" });
 });
 
 // Error handling middleware — handles both ApiError and unexpected errors

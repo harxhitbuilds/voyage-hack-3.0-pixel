@@ -50,6 +50,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     } catch (error: any) {
       console.error("Login failed:", error);
       toast.error(error.message || "Login failed");
+    } finally {
       set({ isLoading: false });
     }
   },
