@@ -2,7 +2,12 @@ import { ToggleLeft, ToggleRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-const ToggleSwitch = ({ enabled, onToggle }) => (
+interface ToggleSwitchProps {
+  enabled: boolean;
+  onToggle: () => void;
+}
+
+const ToggleSwitch = ({ enabled, onToggle }: ToggleSwitchProps) => (
   <Button
     variant="ghost"
     size="sm"

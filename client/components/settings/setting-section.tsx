@@ -38,6 +38,32 @@ import {
 import SettingItem from "./setting-item";
 import ToggleSwitch from "./toggle-switch";
 
+interface LocalSettings {
+  profileVisibility: string;
+  showEmail: boolean;
+  showLocation: boolean;
+  emailNotifications: boolean;
+  pushNotifications: boolean;
+  travelAlerts: boolean;
+  weeklyDigest: boolean;
+  soundEffects: boolean;
+  dataCollection: boolean;
+  locationTracking: boolean;
+  theme: string;
+  language: string;
+  currency: string;
+  autoSync: boolean;
+}
+
+interface SettingsSectionsProps {
+  settings: LocalSettings;
+  handleToggle: (key: keyof LocalSettings) => void;
+  handleSelectChange: (key: keyof LocalSettings, value: string) => void;
+  handleLogout: () => void;
+  handleDeleteAccount: () => void;
+  handleExportData: () => void;
+}
+
 const SettingsSections = ({
   settings,
   handleToggle,
@@ -45,7 +71,7 @@ const SettingsSections = ({
   handleLogout,
   handleDeleteAccount,
   handleExportData,
-}) => (
+}: SettingsSectionsProps) => (
   <div className="space-y-6 lg:col-span-2">
     <div className="bg-card border-border rounded-xl border">
       <div className="border-border border-b p-6">
