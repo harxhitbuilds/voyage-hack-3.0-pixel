@@ -64,7 +64,7 @@ Nimbus bridges traditional Indian heritage tourism with next-generation AI techn
 | -------------------------------------------------- | ------------------------------------------------------- |
 | ![AR/VR](./client/public/marketing/expirience.png) | ![Recommendations](./client/public/marketing/recom.png) |
 
-| 2D → 3D Generation                               | Email Itinerary                                |
+| Email Itenary                               | 2D to 3D Generation                                |
 | ------------------------------------------------ | ---------------------------------------------- |
 | ![2D→3D](./client/public/marketing/2d-to-3d.png) | ![Email](./client/public/marketing/email.png) |
 
