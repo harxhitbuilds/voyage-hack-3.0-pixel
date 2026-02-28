@@ -3,16 +3,12 @@ import asyncHandler from "../utils/async-handle.js";
 import ApiResponse from "../utils/response.js";
 import ApiError from "../utils/error.js";
 import User from "../models/user.model.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import "dotenv/config";
+import { generateWithRetry } from "../utils/gemini.js";
 
 import {
   fallbackRecommendations,
   fallbackTrendingPlaces,
 } from "../fallback-response/index.js";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
 const fetchDestinationImage = async (searchQuery) => {
   try {
@@ -136,8 +132,17 @@ Return ONLY a valid JSON array of 6 objects with this exact structure:
 
 Use real Unsplash landscape photo URLs for Indian destinations. Return ONLY the JSON array.`;
 
-    const result = await geminiModel.generateContent(prompt);
-    const text = result.response.text().replace(/```json|```/g, "").trim();
+    const result = await generateWithRetry({
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+      contents: prompt,
+    });
+    const raw = result.text.replace(/```json|```/g, "").trim();
+    // Extract JSON array — handles grounded responses with surrounding prose
+    const arrMatch = raw.match(/\[[\s\S]*\]/);
+    if (!arrMatch) throw new Error("Could not extract JSON array from AI response");
+    const text = arrMatch[0];
     const recommendations = JSON.parse(text);
 
     return res.status(200).json(

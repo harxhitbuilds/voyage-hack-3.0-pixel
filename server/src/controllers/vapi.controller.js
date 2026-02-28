@@ -4,14 +4,11 @@ import ApiError from "../utils/error.js";
 import { VapiClient } from "@vapi-ai/server-sdk";
 import Trip from "../models/trip.model.js";
 import User from "../models/user.model.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateWithRetry } from "../utils/gemini.js";
 
 const vapi = new VapiClient({
   token: process.env.VAPI_PRIVATE_KEY,
 });
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // Process transcript with Gemini to extract trip details
 const processTranscriptWithGemini = async (transcript) => {
@@ -51,12 +48,19 @@ Generate the itinerary based on the destination, dates, budget, and activities m
 Return only the JSON object, no other text.
 `;
 
-    const result = await model.generateContent(prompt);
-    const response = result.response.text();
+    const result = await generateWithRetry({
+      config: {
+        tools: [{ googleSearch: {} }],
+      },
+      contents: prompt,
+    });
+    const response = result.text;
 
-    // Parse JSON response
+    // Parse JSON response — extract object to handle grounded prose wrapping
     const cleanedResponse = response.replace(/```json|```/g, "").trim();
-    const tripData = JSON.parse(cleanedResponse);
+    const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error("Could not extract JSON from AI response");
+    const tripData = JSON.parse(jsonMatch[0]);
 
     console.log("✨ Gemini processed trip data:", tripData);
     return tripData;
@@ -80,7 +84,7 @@ Return only the JSON object, no other text.
 
 // Create outbound call with proper error handling
 export const createOutboundCall = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user._id;
 
   // Validate required environment variables
   if (

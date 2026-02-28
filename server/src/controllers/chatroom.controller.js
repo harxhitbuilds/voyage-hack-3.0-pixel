@@ -1,13 +1,9 @@
 import crypto from "crypto";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { generateWithRetry } from "../utils/gemini.js";
 import ChatRoom from "../models/chatroom.model.js";
 import asyncHandler from "../utils/async-handle.js";
 import ApiResponse from "../utils/response.js";
 import ApiError from "../utils/error.js";
-import "dotenv/config";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
 // ─── Create a new chat room ────────────────────────────────────────────────────
 export const createRoom = asyncHandler(async (req, res) => {
@@ -218,21 +214,27 @@ RESPOND ONLY with valid JSON in this exact format (no markdown, no code fences):
 `;
 
     try {
-        const result = await geminiModel.generateContent(prompt);
-        const responseText = result.response.text().trim();
+        const result = await generateWithRetry({
+            config: {
+                tools: [{ googleSearch: {} }],
+            },
+            contents: prompt,
+        });
+        const rawText = result.text.trim();
+
+        // Strip markdown fences and grounding metadata, then extract the JSON object
+        const cleaned = rawText.replace(/```json|```/g, "").trim();
+        const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+            throw new Error("Could not extract JSON from AI response");
+        }
 
         // Parse the JSON from the LLM response
         let plan;
         try {
-            plan = JSON.parse(responseText);
+            plan = JSON.parse(jsonMatch[0]);
         } catch {
-            // Try extracting JSON from potential markdown wrapping
-            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-                plan = JSON.parse(jsonMatch[0]);
-            } else {
-                throw new Error("Could not parse AI response as JSON");
-            }
+            throw new Error("Could not parse AI response as JSON");
         }
 
         // Validate the structure
@@ -264,10 +266,13 @@ RESPOND ONLY with valid JSON in this exact format (no markdown, no code fences):
                 new ApiResponse(200, { message: savedAiMessage, plan }, "Plan generated successfully")
             );
     } catch (error) {
-        console.error("AI Plan generation error:", error);
-        throw new ApiError(500, "Failed to generate plan. Try again later.", [
-            error.message,
-        ]);
+        console.error("AI Plan generation error:", error.message);
+        // Surface quota/rate-limit errors clearly
+        if (error.message?.includes("429") || error.message?.includes("quota") || error.message?.includes("exceeded")) {
+            throw new ApiError(429, "AI quota exceeded. Please try again in a minute.", [error.message]);
+        }
+        if (error instanceof ApiError) throw error;
+        throw new ApiError(500, "Failed to generate plan. Try again later.", [error.message]);
     }
 });
 

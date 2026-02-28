@@ -38,7 +38,7 @@ const app = express();
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://pixel-symbiosis-skill-hackathon.onrender.com", "https://pixel-symbiosis-skill-hackathon.vercel.app"],
+    origin: ["http://localhost:3000", "https://voyage-hack-3-0-pixel.vercel.app"],
     credentials: true,
   })
 );
