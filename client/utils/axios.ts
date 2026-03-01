@@ -1,4 +1,5 @@
 import axios from "axios";
+import { onAuthStateChanged } from "firebase/auth";
 
 import { auth } from "@/configurations/firebase.config";
 
@@ -13,10 +14,30 @@ export const apiClient = axios.create({
   withCredentials: true,
 });
 
+/**
+ * Waits for Firebase to finish restoring the auth session, then returns the
+ * current user (or null). This prevents race conditions on page refresh where
+ * auth.currentUser is null until Firebase finishes initializing.
+ */
+const getFirebaseUser = () =>
+  new Promise<import("firebase/auth").User | null>((resolve) => {
+    // If Firebase has already resolved the auth state, use it immediately
+    if (auth.currentUser !== undefined) {
+      resolve(auth.currentUser);
+      return;
+    }
+    // Otherwise wait for the first auth state change event
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      unsubscribe();
+      resolve(user);
+    });
+  });
+
 apiClient.interceptors.request.use(
   async (config) => {
-    if (auth.currentUser) {
-      const token = await auth.currentUser.getIdToken();
+    const user = await getFirebaseUser();
+    if (user) {
+      const token = await user.getIdToken();
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
